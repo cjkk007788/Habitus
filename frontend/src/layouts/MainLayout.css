@@ -1,0 +1,88 @@
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  /* width 100vw, height 100vh is full size of screen */
+  /* this div is used for background color */
+  /* To apply 75% zoom globally without clipping, we scale width/height by 1 / 0.75 = 133.333% */
+  width: 133.333vw;
+  height: 133.333vh;
+  zoom: 0.75;
+  overflow: hidden;
+  background-color: var(--bg-color);
+  padding: 8px;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.bottom-split-area {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  overflow: hidden;
+}
+
+/* Left Sidebar: background of side bar width auto is fitted at sidebar component */
+.layout-left-sidebar {
+  width: auto;
+  flex-shrink: 0;
+  background-color: var(--bg-color-panel);
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.layout-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 450px;
+  background-color: var(--bg-color-panel);
+  border-radius: 8px;
+  overflow: hidden;
+  padding-top: 0px;
+}
+
+.layout-outlet-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* Right Sidebar (Dynamic) */
+.layout-right-sidebar-wrapper {
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+}
+
+.layout-right-sidebar-wrapper.open {
+  width: 400px;
+  transition: width 0s;
+}
+
+.layout-right-sidebar-wrapper.closed {
+  width: 0px;
+  /* 부모의 너비는 즉시(0s) 변하지만 닫힐 때만 0.15초 딜레이를 줘서 애니메이션이 끝날 때까지 공간을 유지 */
+  transition: width 0s linear 0.15s;
+}
+
+/* 내부 컨테이너를 Transform으로 이동시켜 레이아웃 재계산(랙)을 방지 */
+.layout-right-sidebar-inner {
+  width: 400px;
+  background-color: var(--bg-color-panel);
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-right-sidebar-inner.open {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+}
+
+.layout-right-sidebar-inner.closed {
+  transform: translateX(100%);
+  opacity: 0;
+  transition: transform 0.15s ease-in, opacity 0.15s ease-in;
+}

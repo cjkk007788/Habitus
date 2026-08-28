@@ -1,0 +1,106 @@
+.genre-grid-container {
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.genre-grid-header {
+  margin-bottom: 24px;
+}
+
+.genre-grid-header h1 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  color: var(--text-primary, #fff);
+}
+
+.genre-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+  padding-bottom: 12px;
+}
+
+.genre-album {
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  height: 72px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.genre-album:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+.genre-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  z-index: 2;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+.genre-emoji {
+  font-size: 64px;
+  position: absolute;
+  bottom: -15px;
+  right: -10px;
+  opacity: 0.3;
+  transform: rotate(15deg);
+  z-index: 1;
+  user-select: none;
+}
+
+/* ── Toggle Button ── */
+.genre-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  color: var(--text-secondary, #b3b3b3);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.genre-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-primary, #fff);
+}
+
+/* ── Chevron Icon Rotation ── */
+.genre-toggle-icon {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.genre-toggle-icon.rotated {
+  transform: rotate(-180deg);
+}
+
+/* ── Grid Wrapper ── */
+.genre-grid-wrapper {
+  overflow: hidden; 
+  padding-top: 4px; /* hover 시 카드가 위로 올라가도 잘리지 않도록 여백 추가 */
+  margin-top: -4px;
+  transition: max-height 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.genre-grid-wrapper--open {
+  max-height: 5000px; /* 장르가 많을 때 하단이 잘리지 않도록 넉넉한 값 할당 */
+}
+
+.genre-grid-wrapper--closed {
+  max-height: 155px; /* 대략 2줄 정도의 높이만 노출 (72px + 10px + 72px) */
+}

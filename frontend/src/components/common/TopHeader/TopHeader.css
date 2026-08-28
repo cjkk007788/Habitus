@@ -1,0 +1,221 @@
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  height: 64px;
+  background-color: var(--bg-color-panel);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.top-header-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-logo);
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+/* ─── Center: 검색 영역 ─────────────────────────── */
+.top-header-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 6px 6px 6px 12px;
+  width: 100%;
+  max-width: 520px;
+  gap: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-bar-wrapper:focus-within {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* 필터 트리거 버튼 */
+.search-filter-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.search-filter-trigger:hover {
+  background-color: var(--bg-color-hover);
+}
+
+.search-filter-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.search-filter-arrow {
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+/* 구분선 */
+.search-divider {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border-color);
+  flex-shrink: 0;
+}
+
+/* 검색 아이콘 */
+.search-icon {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* 검색 인풋 */
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* 클리어 버튼 */
+.search-clear-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.search-clear-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-color-hover);
+}
+
+/* 검색 실행 버튼 */
+.search-submit-btn {
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: 18px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.search-submit-btn:hover {
+  background-color: var(--accent-hover);
+}
+
+.search-submit-btn:active {
+  transform: scale(0.97);
+}
+
+/* ─── 필터 드롭다운 ─────────────────────────── */
+.search-filter-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background-color: var(--bg-color-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  min-width: 120px;
+  animation: filterDropdownIn 0.15s ease;
+}
+
+@keyframes filterDropdownIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.search-filter-option {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.search-filter-option:hover {
+  background-color: var(--bg-color-hover);
+  color: var(--text-primary);
+}
+
+.search-filter-option.active {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* ─── Right ─────────────────────────── */
+.top-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 1;
+}
+
+.profile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.profile-icon:hover {
+  background-color: var(--bg-color-hover);
+}

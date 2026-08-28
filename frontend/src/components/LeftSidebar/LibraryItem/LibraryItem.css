@@ -1,0 +1,144 @@
+.library_item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.library_item.clickable {
+  cursor: pointer;
+}
+
+.library_item.clickable:hover {
+  background-color: var(--bg-color-hover);
+  transform: translateX(4px);
+}
+
+.item_image {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #282828;
+}
+
+.item_image.rounded {
+  border-radius: 50%;
+}
+
+.item_image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.icon_placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: linear-gradient(135deg, #1e293b, #334155);
+}
+
+.item_info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.item_title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item_subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #b3b3b3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 삭제 버튼 스타일링 ── */
+.btn_remove {
+  margin-left: auto; /* 우측으로 밀어내기 */
+  background: transparent;
+  border: none;
+  color: #b3b3b3;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0; /* 기본적으로는 숨김 */
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+/* 행(아이템)에 마우스를 올렸을 때만 보이게 */
+.library_item:hover .btn_remove {
+  opacity: 1;
+}
+
+/* 버튼 자체에 마우스를 올렸을 때 강조 효과 */
+.btn_remove:hover {
+  color: #ff4444;
+  background-color: rgba(255, 68, 68, 0.1);
+}
+
+/* ── 믹스 생성 선택 모드 스타일링 ── */
+.library_item.selection_mode_active {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  background-color: var(--bg-color-hover);
+}
+
+.library_item.selection_mode_active:hover {
+  transform: translateY(-4px);
+}
+
+.btn_add_mix {
+  margin-left: auto;
+  background: #1db954;
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 1; /* 선택 모드일 때는 항상 보이게 */
+  transition: all 0.2s ease;
+  padding: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.library_item.selection_mode_active:hover .btn_add_mix {
+  transform: scale(1.1);
+  background: #1ed760;
+}
+
+.btn_add_mix:hover {
+  transform: scale(1.1);
+  background: #1ed760;
+}

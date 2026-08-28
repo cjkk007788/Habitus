@@ -1,0 +1,62 @@
+:root {
+  /*bg-color thema bottom color*/
+  --bg-color: #0a192f;
+  /*bg-color-panel this color is for the panel back color in main app*/
+  --bg-color-panel: #112240;
+  --bg-color-panel-light: #798fa6;
+  --bg-color-hover: #233554;
+  --bg-color-black: #353232;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-color: #3b82f6;
+  --accent-hover: #60a5fa;
+  --border-color: #334155;
+  --text-logo: orange;
+
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Resizable panels resize handle styling */
+.resize-handle {
+  width: 6px;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  cursor: col-resize;
+  z-index: 10;
+}
+
+.resize-handle:hover,
+.resize-handle[data-resize-handle-state="drag"] {
+  background-color: var(--accent-color);
+}
+
+.resize-handle[data-resize-handle-state="drag"] {
+  width: 6px;
+}
+
+/* Common Media Album Grid Layout */
+.media-album-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
+  justify-content: start;
+}

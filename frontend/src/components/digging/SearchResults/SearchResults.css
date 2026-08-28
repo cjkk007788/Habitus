@@ -1,0 +1,111 @@
+/* ═══════════════════════════════════════════════
+   Search Result Section
+   ═══════════════════════════════════════════════ */
+
+.sr-section {
+  margin-bottom: 8px;
+}
+
+/* ─── 헤더 ─────────────────────────────────────── */
+.sr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.sr-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sr-header-icon {
+  font-size: 16px;
+}
+
+.sr-header-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+}
+
+.sr-header-query {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.sr-header-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1px 8px;
+}
+
+.sr-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.sr-close-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-color-hover);
+}
+
+/* ─── 상태 메시지 ───────────────────────────────── */
+.sr-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 16px 0;
+}
+
+.sr-spinner {
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.sr-error {
+  color: #f87171;
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+.sr-empty {
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 16px 0;
+  font-style: italic;
+}
+
+/* ─── 구분선 ─────────────────────────────────────── */
+.sr-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border-color) 20%,
+    var(--border-color) 80%,
+    transparent
+  );
+  margin: 20px 0 16px;
+}

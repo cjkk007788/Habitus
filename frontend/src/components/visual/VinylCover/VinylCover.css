@@ -1,0 +1,119 @@
+.vinyl-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  /* Need overflow visible so the record can slide out */
+  margin-bottom: 10px;
+}
+
+.vinyl-sleeve {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+  /* Sleeve is on top */
+  overflow: hidden;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vinyl-sleeve img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* When playing, the sleeve slides slightly to the left to reveal the record */
+.vinyl-sleeve.playing {
+  transform: translateX(-20%);
+}
+
+.vinyl-record {
+  position: absolute;
+  top: 2%;
+  left: 2%;
+  width: 96%;
+  height: 96%;
+  border-radius: 50%;
+  background: #111;
+  z-index: 1;
+  /* Record is underneath the sleeve */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* The grooves on the vinyl */
+.vinyl-grooves {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(#111 0%,
+      #111 2%,
+      #1a1a1a 3%,
+      #111 4%);
+  opacity: 0.5;
+}
+
+.vinyl-center-label {
+  position: relative;
+  width: 35%;
+  height: 35%;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 3;
+}
+
+.vinyl-center-label img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vinyl-hole {
+  position: absolute;
+  width: 4%;
+  height: 4%;
+  border-radius: 50%;
+  background: var(--bg-color-panel);
+  z-index: 4;
+}
+
+/* The spinning animation
+오른쪽으로 30% 이동한 상태에서 회전 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg) translateX(30%);
+  }
+
+  to {
+    transform: rotate(360deg) translateX(30%);
+  }
+}
+
+/* When playing, the record slides out to the right and spins! */
+.vinyl-record.spinning {
+  /* We use a multi-transform trick: slide it out, THEN spin it using a wrapper, OR just use keyframes that include the translation */
+  animation: spinSlide 4s linear infinite;
+}
+
+@keyframes spinSlide {
+  from {
+    transform: translateX(35%) rotate(0deg);
+  }
+
+  to {
+    transform: translateX(35%) rotate(360deg);
+  }
+}

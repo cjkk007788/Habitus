@@ -1,0 +1,48 @@
+/* ===== Common Styles ===== */
+/* Navbar 공통 스타일 */
+
+.title_container {
+    text-align: center;
+    padding-top: 0px;
+}
+
+.site_title {
+    color: chocolate;
+    font-size: 24px;
+    margin: 20px 0px 10px 0px;
+}
+
+.nav_menu ul {
+    display: flex;
+    justify-content: space-evenly;
+    list-style: none;
+    font-size: 30px;
+    padding: 0px;
+    margin: 0px;
+    gap: 50px;
+}
+
+.nav_menu ul li {
+    padding: 0 10px;
+    text-align: center;
+    justify-content: center;
+}
+
+.nav_menu ul li a {
+    color: gray;
+    text-decoration: none;
+}
+
+.nav_menu ul li a:hover {
+    color: black;
+}
+
+.nav_menu ul li a.active {
+    color: black;
+}
+
+.nav_menu ul li h3 {
+    color: inherit;
+    margin: 0px;
+    padding: 0px;
+}

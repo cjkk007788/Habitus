@@ -1,0 +1,307 @@
+.sidebar_container {
+  /* 열린 상태 기준 */
+  width: 300px;
+  background-color: var(--bg-color-panel);
+  color: #0b0a0a;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  /* 부드러운 슬라이딩을 위한 0s 딜레이 트릭 (열릴 땐 0s, 닫힐 땐 0.15s로 MainLayout 방식 차용) */
+  transition: width 0s;
+}
+
+.sidebar_container.collapsed {
+  width: 72px;
+  transition: width 0s linear 0.15s;
+  /* 닫힐 때 0.15초 동안 빈 공간 유지 */
+}
+
+/* 내부 컨텐츠는 항상 300px로 고정하여 내용물 리플로우(랙) 방지 */
+.sidebar_inner {
+  width: 300px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /*clip-path는 자르는 것 위 오른쪽 아래 왼쪽 지금은 아무것도 안 자른 상태*/
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/*유저가 클릭해서 .collapsed 상태가 되면 사이드바 inner는 이렇게 바뀐다 상태 변경은
+jsx에서 한다.*/
+.sidebar_container.collapsed .sidebar_inner {
+  clip-path: inset(0 228px 0 0);
+  /* 오른쪽 228px을 잘라내어 72px만 보이게 함 (닫을 때 애니메이션) */
+  transition: clip-path 0.15s ease-in;
+  /* 닫힐 때는 스포티하게 0.15초! */
+}
+
+/* 축소 상태일 때 요소 숨기기 (display: none 대신 opacity 사용) */
+.sidebar_container .sidebar_view_modes,
+.sidebar_container .sidebar_filter_bar,
+.sidebar_container .add_btn,
+.sidebar_container .sidebar_header h2,
+.sidebar_container .item_info {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  /* 글자가 줄바꿈되지 않게 방지 */
+}
+
+.sidebar_container.collapsed .sidebar_view_modes,
+.sidebar_container.collapsed .sidebar_filter_bar,
+.sidebar_container.collapsed .add_btn,
+.sidebar_container.collapsed .sidebar_header h2,
+.sidebar_container.collapsed .item_info {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 축소 상태일 때 헤더 중앙 정렬 */
+.sidebar_container.collapsed .sidebar_header {
+  padding: 16px 24px;
+  /* 아이콘(24px)이 72px 중앙에 오도록 여백 조정 */
+  transition: padding 0.15s ease-in;
+}
+
+/* ── 헤더 ── */
+.sidebar_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  transition: padding 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.sidebar_header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #b3b3b3;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.sidebar_header h2:hover {
+  color: #fff;
+}
+
+.add_btn {
+  background: none;
+  border: none;
+  color: #b3b3b3;
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.add_btn:hover {
+  color: #fff;
+}
+
+/* ── 팝업 드롭다운 메뉴 (추가 버튼) ── */
+.add-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background-color: #282828;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  z-index: 100;
+}
+
+.add-dropdown-menu button {
+  background: none;
+  border: none;
+  color: #e5e5e5;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.add-dropdown-menu button:hover {
+  background-color: #3e3e3e;
+  color: #fff;
+}
+
+/* ── 뷰 모드 칩 ── */
+.sidebar_view_modes {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 0 16px 8px;
+  overflow-x: auto;
+}
+
+.sidebar_view_modes::-webkit-scrollbar {
+  display: block;
+}
+
+.view_mode_chip {
+  flex-shrink: 0;
+  background-color: #2a2a2a;
+  color: #b3b3b3;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.view_mode_chip:hover {
+  background-color: #3a3a3a;
+  color: #fff;
+}
+
+.view_mode_chip.active {
+  background-color: var(--accent-color, #3b82f6);
+  color: #fff;
+}
+
+/* ── 필터바 (정렬 + 타입 드롭다운) ── */
+.sidebar_filter_bar {
+  display: flex;
+  gap: 6px;
+  padding: 4px 16px 10px;
+}
+
+.filter_select {
+  flex: 1;
+  background-color: #2a2a2a;
+  color: var(--text-primary, #f8fafc);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  /* 드롭다운 화살표 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23b3b3b3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 22px;
+}
+
+.filter_select:hover {
+  border-color: #555;
+}
+
+.filter_select:focus {
+  border-color: var(--accent-color, #3b82f6);
+}
+
+.filter_select option {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+/* ── 리스트 ── */
+.sidebar_list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 8px 16px;
+  /* 열려있을 때 8px + 12px(아이템) = 20px 정렬 */
+  transition: padding 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* 닫혔을 때 아이템 이미지(48px)가 72px 중앙에 오도록 여백 제거 (0 + 12px = 12px) */
+.sidebar_container.collapsed .sidebar_list {
+  padding: 0 0 16px;
+  transition: padding 0.15s ease-in;
+}
+
+/* 커스텀 스크롤바 */
+.sidebar_list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar_list::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+/* ── Empty State ── */
+.sidebar_empty_state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  gap: 8px;
+  text-align: center;
+}
+
+.sidebar_empty_state p:first-child {
+  font-size: 32px;
+}
+
+.sidebar_empty_state p:nth-child(2) {
+  font-size: 13px;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.4;
+}
+
+/* Mock 데이터 불러오기 버튼 */
+.mock_data_btn {
+  margin-top: 8px;
+  background-color: #2a2a2a;
+  color: var(--text-primary, #f8fafc);
+  border: 1px dashed var(--text-secondary, #94a3b8);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.mock_data_btn:hover {
+  background-color: #3a3a3a;
+  border-color: var(--accent-color, #3b82f6);
+}
+
+/* ── 하단 Footer ── */
+.sidebar_footer {
+  padding: 8px 16px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.clear_archive_btn {
+  width: 100%;
+  background: none;
+  color: var(--text-secondary, #94a3b8);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 0;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.clear_archive_btn:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* collapsed 상태에서 footer 숨기기 */
+.sidebar_container.collapsed .sidebar_footer {
+  display: none;
+}

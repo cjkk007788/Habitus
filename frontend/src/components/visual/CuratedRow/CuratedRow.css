@@ -1,0 +1,19 @@
+.curated-row-container {
+  margin-bottom: 40px;
+}
+
+.curated-row-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  padding-left: 20px;
+  color: var(--text-primary);
+}
+
+.curated-row-scroll {
+  padding: 0 20px 20px 20px;
+}
+
+.curated-row-item {
+  width: 100%; 
+}

@@ -1,0 +1,114 @@
+.archive-album-row {
+  margin-bottom: 40px;
+}
+
+/* 행 헤더 */
+.archive-album-row__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+}
+
+.archive-album-row__badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.archive-album-row__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  margin: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.archive-album-row__count {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #aaa);
+  flex-shrink: 0;
+}
+
+/* X 닫기 버튼 */
+.archive-album-row__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #aaa);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+  margin-left: 4px;
+}
+
+.archive-album-row__remove:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+/* 가로 스크롤 영역 */
+.archive-album-row__scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.archive-album-row__scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.archive-album-row__scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.archive-album-row__scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+/* 아이템 카드 래퍼 */
+.archive-album-row__item {
+  flex-shrink: 0;
+  width: 140px;
+  
+  /* 딜링 애니메이션 */
+  animation: spreadAlbum 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes spreadAlbum {
+  0% {
+    opacity: 0;
+    /* 카드가 전부 0번째 위치(왼쪽 끝)에서 출발하도록 역산 (-152px = width 140 + gap 12) */
+    transform: translateX(calc(-152px * var(--album-index))) scale(0.8) rotate(-10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(0deg);
+  }
+}
+
+/* 빈 상태 */
+.archive-album-row__empty {
+  color: var(--text-secondary, #aaa);
+  font-size: 0.9rem;
+  padding: 20px 0;
+}
