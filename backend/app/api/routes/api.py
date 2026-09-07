@@ -8,6 +8,7 @@ api_router.include_router(items.router, prefix="/items", tags=["items"])
 api_router.include_router(albums.router, prefix="/albums", tags=["albums"])
 api_router.include_router(mixes.router, prefix="/mixes", tags=["mixes"])
 api_router.include_router(music_genres.router, prefix="/genres/music", tags=["music_genres"])
+#태그에 있는 파일명으로 routing
 api_router.include_router(book_genres.router, prefix="/genres/book", tags=["book_genres"])
 api_router.include_router(movie_genres.router, prefix="/genres/movie", tags=["movie_genres"])
 api_router.include_router(curation.router, prefix="/curation", tags=["curation"])

@@ -7,6 +7,8 @@ const CATEGORIES = [
 ];
 
 export default function TabMenu({ activeCategory, setActiveCategory }) {
+
+  
   return (
     <nav className="digging_menu">
       <ul style={{ justifyContent: 'space-evenly' }}>

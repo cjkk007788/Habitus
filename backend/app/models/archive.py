@@ -5,8 +5,13 @@ import uuid
 #Base is parent class of every table class made from database.py
 from app.core.database import Base
 
+##Model 폴더는 DB의 설계도 가장 아래에 있는 것
 
+#이 파일은 Habitus의 핵심 데이터들을 정의한 중요한 모델 파일
 
+#catalog.py는 공용 임시 창고
+
+#archive.py는 개인 서제 유저의 보관함
 
 # ============================================================
 # 중간 테이블 (다대다 관계용 Junction Tables)

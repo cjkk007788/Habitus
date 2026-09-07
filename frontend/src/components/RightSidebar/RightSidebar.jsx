@@ -56,6 +56,7 @@ export default function RightSidebar() {
       <RightSidebarHeader />
 
       {activeSidebarItem._viewType === 'mix' ? (
+        //분기로직 activeSidebarItem.viewtype을 확인하는 로직
         <MixStagingArea />
       ) : (
         <>

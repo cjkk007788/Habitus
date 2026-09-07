@@ -44,6 +44,7 @@
 
 .layout-outlet-container {
   flex: 1;
+  /*OverFlow-y 넘치면 스크롤을 만드는 코드*/
   overflow-y: auto;
   padding: 1rem;
 }
@@ -57,7 +58,7 @@
 }
 
 .layout-right-sidebar-wrapper.open {
-  width: 400px;
+  width: 500px;
   transition: width 0s;
 }
 
@@ -69,7 +70,7 @@
 
 /* 내부 컨테이너를 Transform으로 이동시켜 레이아웃 재계산(랙)을 방지 */
 .layout-right-sidebar-inner {
-  width: 400px;
+  width: 500px;
   background-color: var(--bg-color-panel);
   display: flex;
   flex-direction: column;

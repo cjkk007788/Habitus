@@ -7,22 +7,25 @@ from app.core.database import Base
 
 #caching table
 
+#데이터 캐시 테이블
+
 class CatalogEntry(Base):
     """
     범용 외부 메타데이터 캐시 테이블.
     MusicBrainz, Spotify, TMDB, Google Books, Met API 등
     어떤 외부 서비스의 데이터든 통합 저장합니다.
-    
     동일한 외부 ID에 대해 중복 API 호출을 방지하는 캐시 역할도 겸합니다.
     """
     __tablename__ = "catalog_entries"
 
     #catalog id
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-
+    #UUID 파이썬 객체 36자리 절대로 겹치지 않는 ID를 사용
 
     # 외부 서비스 식별 ---
 
+    #Column이라는 string변수가 들어가는 객체로 external id를 초기화
+    #빈값이 불가능
     external_id = Column(String, nullable=False)        # 외부 서비스의 고유 ID (Spotify track ID, TMDB movie ID 등)
     external_source = Column(String, nullable=False)    # "spotify", "tmdb", "google_books", "met", "musicbrainz"
     

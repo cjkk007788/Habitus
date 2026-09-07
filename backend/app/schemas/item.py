@@ -1,14 +1,26 @@
+##프론트 엔드와 주고 받는 데이터를 깐깐하게 검사하는 도구들
+#pydantic 데이터를 검증하는 도구
+#BaseModel을 상속
+#Field는 데이터의 세부 규칙을 정한다
+#httpurl은 문자열이 올바른 웹주소인지 검사해주는 타입
 from pydantic import BaseModel, Field, HttpUrl
+#typing은 데이터의 형태를 알려주는 표준 도구
+#optional은 있어도 되고 없어도 되는
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime
 
+#Schema는 프론트 앤드와 주고 받는 데이터 규격이다
+#데이터를 검증하는 방법에 대한 코드이다
 # ============================================================
 # Item Link Schemas
 # ============================================================
 #Basis using for pydantic is inherits BaseModel
 class ItemLinkBase(BaseModel):
     #BaseModel of pydantic is validation object
+    #Filed는 검증 규칙을 적어둔 함수
+    #model에서 Column과 비슷
+    #str만 올 수 있고 반드시 와야한다. (...이게 반드시)
     platform: str = Field(..., description="youtube, spotify, imdb 등")
     url: str = Field(..., description="해당 플랫폼의 URL")
     # description is used in Swagger UI
@@ -47,6 +59,10 @@ class ItemBase(BaseModel):
     user_meta: Optional[Dict[str, Any]] = Field(default_factory=dict, description="유저 커스텀 태그/메모")
 
 class ItemCreate(ItemBase):
+    
+    #ItemCreat는 백엔드에 보내는 item 규격서
+    #itembase를 상속해서 기본 item 정보와함께 item과 관련된 링크를
+    #Item정보와 함께 묶는다
     links: Optional[List[ItemLinkCreate]] = []
 
 class ItemUpdate(BaseModel):
@@ -74,3 +90,10 @@ class ItemInDBBase(ItemBase):
 #this is actural final json
 class ItemResponse(ItemInDBBase):
     links: List[ItemLinkResponse] = []
+
+##schemas는 데이터를 담는 서류 양식
+##routes가 함수역할을 한다
+#schemas는 프론트가 내용을 적어서 제출하는 양식이고
+#내용을 검사한다
+#이 내용 양식을 통해서 routes에 있는 함수가 쿼리를 날린다
+

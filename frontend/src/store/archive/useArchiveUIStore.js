@@ -37,6 +37,8 @@ const useArchiveUIStore = create((set) => ({
   }),
 
   pushAlbumToArchive: (albumId) => set((state) => {
+    //standalone은 믹스로 저장하는 게 아니라 앨범 단독으로 아카이브에 띄우는 경우세 사용
+    
     const newItem = { sourceId: 'standalone', type: 'album', targetId: albumId };
     // 기존에 독립적으로 띄워둔 동일한 앨범이 있다면 제거하고 위로 올림
     const filteredOldItems = state.archiveDisplayItems.filter(

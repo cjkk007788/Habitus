@@ -29,8 +29,10 @@ class AlbumInDBBase(AlbumBase):
     class Config:
         from_attributes = True
 
+#Item을 열어볼때의 규격
 class AlbumResponse(AlbumInDBBase):
     # 이 앨범에 담긴 아이템 목록
+    #여기에 Item 관련 정보들이 들어간다
     items: List[ItemResponse] = []
 
 class AlbumListResponse(AlbumInDBBase):

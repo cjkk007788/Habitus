@@ -34,7 +34,7 @@ const TYPE_LABEL = {
 export default function LibraryItem({ data, isSelectionMode }) {
   const viewType = data._viewType || 'item';
   const location = useLocation();
-  const isArchivePage = location.pathname === '/archive';
+  const isArchivePage = location.pathname.startsWith('/archive');
 
   const openRightSidebar = useSidebarStore((state) => state.openRightSidebar);
   const pushAlbumToArchive = useArchiveUIStore((state) => state.pushAlbumToArchive);
@@ -144,12 +144,9 @@ export default function LibraryItem({ data, isSelectionMode }) {
             pushAlbumToArchive(data.id);
           } else if (viewType === 'mix') {
             useArchiveUIStore.getState().pushMixToArchive(data.id);
-          } else {
-            openRightSidebar(data);
           }
         } else {
-          // 그 외 → 기존 RightSidebar 열기
-
+          // 그 외(Digging 등) 페이지에서만 우측 사이드바 열기
           openRightSidebar(data);
         }
       }}

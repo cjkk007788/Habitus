@@ -4,6 +4,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Digging from './pages/Digging';
 import Archive from './pages/Archive';
+import ArchiveContent from './pages/ArchiveContent';
+import ArchiveReport from './pages/ArchiveReport';
 import Social from './pages/Social';
 
 /*
@@ -33,7 +35,11 @@ function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Navigate to="/digging" replace />} />
         <Route path="/digging" element={<Digging />} />
-        <Route path="/archive" element={<Archive />} />
+        <Route path="/archive" element={<Archive />}>
+          <Route index element={<Navigate to="content" replace />} />
+          <Route path="content" element={<ArchiveContent />} />
+          <Route path="report" element={<ArchiveReport />} />
+        </Route>
         <Route path="/social" element={<Social />} />
       </Route>
     </Routes>

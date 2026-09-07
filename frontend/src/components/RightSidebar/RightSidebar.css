@@ -1,7 +1,8 @@
 .right-sidebar {
   display: flex;
   flex-direction: column;
-  width: 400px;
+  width: 500px;
+  /* 400px에서 500px로 증가 */
   height: 100%;
   background-color: var(--bg-color-panel);
   border-radius: 8px;
@@ -75,6 +76,10 @@
 
 .rs-media-container {
   width: 100%;
+  max-width: 330px;
+  /* 애니메이션 공간 확보를 위해 320px에서 280px로 수정 */
+  max-height: 330px;
+  margin: 0 auto;
   aspect-ratio: 1 / 1;
   border-radius: 8px;
   display: flex;

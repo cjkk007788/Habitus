@@ -132,3 +132,36 @@
 .archive-standalone-album {
   margin-bottom: 24px;
 }
+
+/* Tabs */
+.archive-tabs {
+  display: flex;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.archive-tab {
+  text-decoration: none;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.archive-tab:hover {
+  color: #fff;
+}
+
+.archive-tab.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.archive-body {
+  margin-top: 16px;
+}
