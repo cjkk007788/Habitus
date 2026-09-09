@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import useSidebarStore from '../../../store/sidebar/useSidebarStore';
-import VinylCover from '../../visual/VinylCover/VinylCover';
+import useSidebarStore from '../../../../store/sidebar/useSidebarStore';
+import VinylCover from '../../../visual/VinylCover/VinylCover';
 
 export default function MoviePersonDetails({ item }) {
   const [personDetail, setPersonDetail] = useState(null);
@@ -42,13 +42,7 @@ export default function MoviePersonDetails({ item }) {
 
   return (
     <>
-      <div className="rs-media-container" style={{ marginBottom: '16px' }}>
-        {(item.coverImages?.[0] || item.cover_image_url || item.image_url) ? (
-          <VinylCover imageUrl={item.coverImages?.[0] || item.cover_image_url || item.image_url} isPlaying={false} />
-        ) : (
-          <div className="rs-cover-placeholder">👤</div>
-        )}
-      </div>
+
 
       <div className="rs-context-area">
         {item.subtitle && (

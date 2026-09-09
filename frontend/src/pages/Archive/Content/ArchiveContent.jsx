@@ -1,10 +1,11 @@
 import React from 'react';
-import './Archive.css';
-import useArchiveUIStore from '../store/archive/useArchiveUIStore';
-import { useResolvedArchiveAlbums } from '../components/Archive/hooks/useResolvedArchiveAlbums';
-import { useGroupedAlbums } from '../components/Archive/hooks/useGroupedAlbums';
-import ArchiveMixGroup from '../components/Archive/ArchiveMixGroup';
-import ArchiveAlbumRow from '../components/ArchiveAlbumRow/ArchiveAlbumRow';
+import '../Archive.css';
+import './ArchiveContent.css';
+import useArchiveUIStore from '../../../store/archive/useArchiveUIStore';
+import { useResolvedArchiveAlbums } from '../../../components/Archive/hooks/useResolvedArchiveAlbums';
+import { useGroupedAlbums } from '../../../components/Archive/hooks/useGroupedAlbums';
+import ArchiveMixGroup from '../../../components/Archive/ArchiveMixGroup';
+import ArchiveAlbumRow from '../../../components/ArchiveAlbumRow/ArchiveAlbumRow';
 
 export default function ArchiveContent() {
   const { clearArchiveDisplay, removeRowFromArchive, removeGroupFromArchive } = useArchiveUIStore();
@@ -14,7 +15,7 @@ export default function ArchiveContent() {
 
   return (
     <div className="archive-content-wrapper">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+      <div className="archive-content-actions">
         <button className="archive-clear-btn" onClick={clearArchiveDisplay}>
           모두 닫기
         </button>

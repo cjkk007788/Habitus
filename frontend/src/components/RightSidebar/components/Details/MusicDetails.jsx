@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, MessageCircle, MonitorPlay, Globe, Music, Headphones, Link2, Play } from 'lucide-react';
-import { fetchArtistDetails } from '../../../api/musicbrainz/genreApi';
-import SidebarAudioPlayer from '../components/SidebarAudioPlayer';
-import VinylCover from '../../visual/VinylCover/VinylCover';
-import useSidebarStore from '../../../store/sidebar/useSidebarStore';
+import { fetchArtistDetails } from '../../../../api/musicbrainz/genreApi';
+import SidebarAudioPlayer from '../Media/SidebarAudioPlayer';
+import VinylCover from '../../../visual/VinylCover/VinylCover';
+import useSidebarStore from '../../../../store/sidebar/useSidebarStore';
 
 export default function MusicDetails({ item }) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -55,13 +55,7 @@ export default function MusicDetails({ item }) {
 
   return (
     <>
-      <div className="rs-media-container">
-        {(item.coverImages?.[0] || item.image_url) ? (
-          <VinylCover imageUrl={item.coverImages?.[0] || item.image_url} isPlaying={isPlaying} />
-        ) : (
-          <div className="rs-cover-placeholder">🎵</div>
-        )}
-      </div>
+
 
       <SidebarAudioPlayer
         item={item}

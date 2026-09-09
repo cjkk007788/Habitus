@@ -5,6 +5,7 @@ import { fetchMovieGenres } from '../../../api/tmdb/movieApi';
 import { generateGradient } from '../../../utils/colorUtils';
 import { ChevronDown } from 'lucide-react';
 import useCacheStore from '../../../store/system/cacheStore';
+import AnimatedText from '../../common/AnimatedText/AnimatedText';
 import './GenreGrid.css';
 
 // TTL 상수 (밀리초)
@@ -84,11 +85,13 @@ export default function GenreGrid({ category = 'music', onGenreSelect }) {
   }
 
   return (
-    <div className="genre-grid-container">
+    <div className="genre-grid-container" id="genre-grid-section">
       <div className="genre-grid-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h1>Browse Genres</h1>
+            <h1 className="hover-trigger" style={{ cursor: 'default' }}>
+              <AnimatedText text="Browse Genres" />
+            </h1>
             <p style={{ color: 'var(--text-secondary)' }}>Discover tracks by selecting a genre below.</p>
           </div>
           <button

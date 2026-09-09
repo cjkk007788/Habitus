@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MonitorPlay, ExternalLink } from 'lucide-react';
-import useSidebarStore from '../../../store/sidebar/useSidebarStore';
+import useSidebarStore from '../../../../store/sidebar/useSidebarStore';
 
 export default function MovieDetails({ item }) {
   const [details, setDetails] = useState(null);
@@ -58,17 +58,7 @@ export default function MovieDetails({ item }) {
   const displayedStaff = isCastExpanded ? fullStaff : fullStaff.slice(0, staffLimit);
   return (
     <>
-      <div className="rs-media-container">
-        {item.coverImages?.[0] || item.image_url ? (
-          <img
-            src={item.coverImages?.[0] || item.image_url}
-            alt={item.title}
-            className="rs-cover-image"
-          />
-        ) : (
-          <div className="rs-cover-placeholder">🎬</div>
-        )}
-      </div>
+
 
       <div className="rs-context-area">
         {/* TMDB Metadata */}

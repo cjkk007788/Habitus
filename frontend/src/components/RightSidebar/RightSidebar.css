@@ -1,8 +1,7 @@
 .right-sidebar {
   display: flex;
   flex-direction: column;
-  width: 500px;
-  /* 400px에서 500px로 증가 */
+  width: 550px;
   height: 100%;
   background-color: var(--bg-color-panel);
   border-radius: 8px;
@@ -75,23 +74,37 @@
 }
 
 .rs-media-container {
-  width: 100%;
-  max-width: 330px;
-  /* 애니메이션 공간 확보를 위해 320px에서 280px로 수정 */
-  max-height: 330px;
-  margin: 0 auto;
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
+  width: calc(100% + 32px); /* Pull out to edges to ignore parent padding */
+  margin: -16px -16px 24px -16px; /* Negative margin to bleed to the edges */
+  padding: 24px 0;
   display: flex;
-  background-color: var(--bg-color-hover);
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
   position: relative;
+}
+
+/* Target the VinylCover or regular image inside */
+.rs-media-container > * {
+  width: 340px !important;
+  height: 340px !important;
+  max-width: 340px;
+  border-radius: 12px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.rs-media-container > *:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.7);
 }
 
 .rs-cover-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .rs-cover-placeholder {
@@ -266,7 +279,7 @@
 
 .rs-textarea {
   width: 100%;
-  min-height: 80px;
+  min-height: 400px;
   background-color: var(--bg-color-black);
   border: 1px solid var(--border-color);
   border-radius: 8px;

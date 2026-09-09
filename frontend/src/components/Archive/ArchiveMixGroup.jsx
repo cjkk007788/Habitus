@@ -1,5 +1,6 @@
 import React from 'react';
 import ArchiveAlbumRow from '../ArchiveAlbumRow/ArchiveAlbumRow';
+import AnimatedText from '../common/AnimatedText/AnimatedText';
 import { useArchiveStore } from '../../store/archive';
 import useSidebarStore from '../../store/sidebar/useSidebarStore';
 
@@ -23,8 +24,8 @@ export default function ArchiveMixGroup({ group, onRemove }) {
     <div className="archive-mix-group">
       {/* 헤더 타이틀 영역 */}
       <div className="archive-mix-group-header">
-        <h2 className="archive-mix-group-title" onClick={handleEditClick}>
-          <span className="archive-mix-group-icon">📦</span> {headerItem.albumTitle}
+        <h2 className="archive-mix-group-title hover-trigger" onClick={handleEditClick}>
+          <span className="archive-mix-group-icon">📦</span> <AnimatedText text={headerItem.albumTitle || "Untitled Mix"} />
         </h2>
         <button
           onClick={onRemove}

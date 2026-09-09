@@ -8,25 +8,7 @@ export default function BookDetails({ item }) {
 
   return (
     <>
-      <div className="rs-media-container" style={{ margin: '20px 0' }}>
-        {item.image_url || item.coverImages?.[0] ? (
-          <img
-            src={item.image_url || item.coverImages?.[0]}
-            alt={item.title}
-            className="rs-cover-image"
-            style={{ 
-              width: '100%', 
-              height: 'auto', 
-              maxHeight: '300px', 
-              objectFit: 'contain', 
-              borderRadius: '8px', 
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)' 
-            }}
-          />
-        ) : (
-          <div className="rs-cover-placeholder">📚</div>
-        )}
-      </div>
+
 
       <div className="rs-context-area">
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import LeftSidebar from '../components/LeftSidebar/LeftSidebar';
 import RightSidebar from '../components/RightSidebar/RightSidebar';
-import Navbar from '../components/common/Navbar/Navbar';
+import FloatingSearch from '../components/common/FloatingSearch/FloatingSearch';
 import TopHeader from '../components/common/TopHeader/TopHeader';
 import { Outlet } from 'react-router-dom';
 import useSidebarStore from '../store/sidebar/useSidebarStore';
@@ -23,11 +23,30 @@ export default function MainLayout() {
           <LeftSidebar />
         </div>
         {/* Main Content Area */}
-        <div className="layout-main-content">
-          <Navbar />
+        <div className="layout-main-content" style={{ position: 'relative' }}>
           <div className="layout-outlet-container">
             <Outlet />
+            {/* Habitus Footer Buffer */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '60px 0 140px 0',
+              opacity: 0.8,
+              userSelect: 'none'
+            }}>
+              <span 
+                className="logo"
+                onMouseEnter={() => window.dispatchEvent(new CustomEvent('logoHover'))}
+                onMouseLeave={() => window.dispatchEvent(new CustomEvent('logoLeave'))}
+                style={{ fontSize: '1.5rem', fontWeight: '900', letterSpacing: '4px', color: 'var(--text-logo)', cursor: 'pointer' }}
+              >
+                HABITUS
+              </span>
+            </div>
           </div>
+          <FloatingSearch />
         </div>
         {/* Right Sidebar (Dynamic) 
         In RightSidebar compomnent, we get the uiStore function tooggle switching

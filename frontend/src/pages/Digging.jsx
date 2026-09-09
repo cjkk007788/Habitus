@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import TabMenu from '../components/digging/TabMenu/TabMenu';
 import RecommendationAlbums from '../components/visual/RecommendationAlbums/RecommendationAlbums';
 import GenreGrid from '../components/visual/GenreGrid/GenreGrid';
 import CuratedRow from '../components/visual/CuratedRow/CuratedRow';
 import SearchResultSection from '../components/digging/SearchResults/SearchResultSection';
 import useSearchStore from '../store/search/useSearchStore';
+import AnimatedText from '../components/common/AnimatedText/AnimatedText';
+import BookmarkMenu from '../components/common/BookmarkMenu/BookmarkMenu';
 import { searchContent } from '../api/searchApi';
 
 // 카테고리별 큐레이션 행 정의
@@ -27,10 +28,17 @@ const CURATION_CONFIG = {
 };
 
 export default function Digging() {
-  const [activeCategory, setActiveCategory] = useState('music');
   const [selectedGenre, setSelectedGenre] = useState(null);
 
+  const {
+    searchQuery, searchFilter,
+    setSearchResults, setIsSearching, setSearchError,
+  } = useSearchStore();
+
+  const activeCategory = (searchFilter && searchFilter !== 'all') ? searchFilter : 'music';
+
   useEffect(() => {
+    setSelectedGenre(null); // Reset genre when category changes via Navbar
     // 실제 스크롤이 발생하는 컨테이너는 MainLayout에 있는 .layout-outlet-container 입니다.
     const scrollContainer = document.querySelector('.layout-outlet-container');
     if (scrollContainer) {
@@ -40,11 +48,6 @@ export default function Digging() {
       });
     }
   }, [activeCategory]);
-
-  const {
-    searchQuery, searchFilter,
-    setSearchResults, setIsSearching, setSearchError,
-  } = useSearchStore();
 
   // ─── 검색어 변경 시 API 호출 ───────────────────────
   useEffect(() => {
@@ -77,21 +80,24 @@ export default function Digging() {
 
 
 
-  const handleCategoryChange = (newCategory) => {
-    setActiveCategory(newCategory);
-    setSelectedGenre(null);
-  };
+
 
   const curationRows = CURATION_CONFIG[activeCategory] || [];
 
-  return (
-    <div style={{ padding: '0 20px 20px 20px' }}>
-      <TabMenu
-        activeCategory={activeCategory}
-        setActiveCategory={handleCategoryChange}
-      />
+  // Create sections array for the bookmark menu
+  const bookmarkSections = [
+    ...(searchQuery ? [{ id: 'curation-search', title: searchQuery }] : []),
+    ...curationRows.map(row => ({ id: `curation-${row.id}`, title: row.title })),
+    { id: 'genre-grid-section', title: 'Browse Genres' }
+  ];
 
+  return (
+    <div style={{ padding: '0 20px 20px 20px', position: 'relative' }}>
+      <BookmarkMenu sections={bookmarkSections} />
       <div className="dig_tab_content active" style={{ marginTop: '30px' }}>
+        <h1 className="hover-trigger" style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '24px', textTransform: 'capitalize', cursor: 'default' }}>
+          <AnimatedText text={activeCategory} />
+        </h1>
 
         {/* ▼ 검색 결과: 검색어가 있을 때 맨 위 */}
         <SearchResultSection />

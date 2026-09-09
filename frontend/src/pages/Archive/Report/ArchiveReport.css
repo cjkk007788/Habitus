@@ -1,0 +1,82 @@
+.archive-report-container {
+  padding: 2rem;
+  color: var(--text-primary);
+}
+
+.archive-report-title {
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  cursor: default;
+}
+
+.archive-report-loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.archive-report-empty {
+  color: var(--text-secondary);
+}
+
+.archive-report-grid {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.archive-report-card {
+  flex: 1;
+  min-width: 300px;
+  background-color: var(--bg-color);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.archive-report-card-title {
+  margin-bottom: 1.5rem;
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.archive-report-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.archive-report-list-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 0;
+}
+
+.archive-report-list-item:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.archive-report-item-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.archive-report-item-name.capitalize {
+  text-transform: capitalize;
+}
+
+.archive-report-item-index {
+  color: var(--text-secondary);
+  margin-right: 12px;
+}
+
+.archive-report-item-count {
+  color: var(--text-secondary);
+  background-color: var(--bg-color-hover);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}

@@ -3,6 +3,7 @@ import { X, Loader2 } from 'lucide-react';
 import MediaAlbum from '../../common/MediaAlbum/MediaAlbum';
 import useSearchStore from '../../../store/search/useSearchStore';
 import useSidebarStore from '../../../store/sidebar/useSidebarStore';
+import AnimatedText from '../../common/AnimatedText/AnimatedText';
 import './SearchResults.css';
 
 import { toMediaAlbumItem } from '../../../utils/mediaAdapters';
@@ -27,19 +28,13 @@ export default function SearchResultSection() {
   };
 
   return (
-    <div className="sr-section">
-      {/* 헤더 */}
-      <div className="sr-header">
-        <div className="sr-header-left">
-          <span className="sr-header-icon">🔍</span>
-          <span className="sr-header-title">Search Results</span>
-          <span className="sr-header-query">"{searchQuery}"</span>
-          {!isSearching && (
-            <span className="sr-header-count">{searchResults.length} results</span>
-          )}
-        </div>
-        <button className="sr-close-btn" onClick={clearSearch} title="Close search results">
-          <X size={16} />
+    <div className="curated-row-container" id="curation-search">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <h2 className="curated-row-title hover-trigger" style={{ cursor: 'default', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <AnimatedText text={searchQuery} />
+        </h2>
+        <button className="sr-close-btn" onClick={clearSearch} title="Close search results" style={{ marginTop: '-8px' }}>
+          <X size={20} />
         </button>
       </div>
 
@@ -63,20 +58,25 @@ export default function SearchResultSection() {
 
       {/* 결과 카드 그리드 — MediaAlbum 재사용 */}
       {!isSearching && searchResults.length > 0 && (
-        <div className="uhd-albums-grid media-album-grid">
+        <div className="curated-row-scroll media-album-grid">
           {searchResults.map((item, idx) => (
-            <MediaAlbum
+            <div 
               key={`${item.external_id}_${idx}`}
-              item={toMediaAlbumItem(item)}
-              onClick={handleAlbumClick}
-              onPlayClick={handlePlayClick}
-            />
+              className="curated-item-wrapper"
+              style={{
+                "--album-index": idx,
+                animationDelay: `${idx * 0.05}s`
+              }}
+            >
+              <MediaAlbum
+                item={toMediaAlbumItem(item)}
+                onClick={handleAlbumClick}
+                onPlayClick={handlePlayClick}
+              />
+            </div>
           ))}
         </div>
       )}
-
-      {/* 구분선 */}
-      <div className="sr-divider" />
     </div>
   );
 }

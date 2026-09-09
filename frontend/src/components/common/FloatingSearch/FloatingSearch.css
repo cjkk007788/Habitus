@@ -1,0 +1,85 @@
+.floating-search-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding-bottom: 30px;
+  padding-top: 60px;
+  display: flex;
+  justify-content: center;
+  z-index: 50;
+  background: linear-gradient(to top, var(--bg-color-panel) 60%, transparent 100%);
+  pointer-events: none; /* Allow clicking through the transparent gradient */
+}
+
+.floating-search-wrapper {
+  pointer-events: auto; /* Re-enable clicks on the search bar itself */
+  width: 95%;
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-color-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 16px 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.floating-search-wrapper:focus-within {
+  border-color: var(--accent-color);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+}
+
+
+
+.fs-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  outline: none;
+  font-family: inherit;
+}
+
+.fs-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.fs-clear-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 8px;
+  transition: all 0.2s;
+}
+
+.fs-clear-btn:hover {
+  background-color: var(--bg-color-hover);
+  color: var(--text-primary);
+}
+
+.fs-submit-btn {
+  background-color: var(--accent-color);
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.fs-submit-btn:hover {
+  background-color: var(--accent-hover);
+  transform: scale(1.05);
+}

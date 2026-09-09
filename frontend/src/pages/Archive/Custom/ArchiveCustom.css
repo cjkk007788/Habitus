@@ -1,0 +1,22 @@
+.archive-custom-wrapper {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archive-custom-content {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.archive-custom-title {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.archive-custom-subtitle {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}

@@ -16,19 +16,20 @@
 
 .genre-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
   padding-bottom: 12px;
 }
 
 .genre-album {
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 12px;
   cursor: pointer;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
-  height: 72px;
+  aspect-ratio: 1 / 1;
+  height: auto;
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -40,11 +41,12 @@
 }
 
 .genre-name {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: white;
   z-index: 2;
   text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+  margin-top: auto;
 }
 
 .genre-emoji {
@@ -94,13 +96,15 @@
   overflow: hidden; 
   padding-top: 4px; /* hover 시 카드가 위로 올라가도 잘리지 않도록 여백 추가 */
   margin-top: -4px;
-  transition: max-height 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: max-height 0.6s cubic-bezier(0.25, 1, 0.5, 1), padding-bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .genre-grid-wrapper--open {
-  max-height: 5000px; /* 장르가 많을 때 하단이 잘리지 않도록 넉넉한 값 할당 */
+  max-height: 999999px; /* 장르가 수천 개이므로 하단이 잘리지 않도록 매우 넉넉한 값 할당 */
+  padding-bottom: 16px; /* 하단 그림자나 카드 호버 시 잘림 방지 */
 }
 
 .genre-grid-wrapper--closed {
-  max-height: 155px; /* 대략 2줄 정도의 높이만 노출 (72px + 10px + 72px) */
+  max-height: 0px; 
+  padding-bottom: 0px;
 }

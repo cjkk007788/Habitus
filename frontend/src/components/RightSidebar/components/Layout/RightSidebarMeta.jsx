@@ -8,7 +8,7 @@ export default function RightSidebarMeta({ categoryLabel, year, item, creatorNam
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2 className="rs-item-title">{item.title || item.albumTitle || item.artistName}</h2>
+          <h2 className="rs-item-title">{item.title || item.albumTitle || item.mixTitle || item.artistName}</h2>
           <p className="rs-item-creator">{creatorName}</p>
         </div>
       </div>

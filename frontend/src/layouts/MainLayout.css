@@ -9,15 +9,15 @@
   zoom: 0.75;
   overflow: hidden;
   background-color: var(--bg-color);
-  padding: 8px;
-  gap: 8px;
+  padding: 2px;
+  gap: 2px;
   box-sizing: border-box;
 }
 
 .bottom-split-area {
   display: flex;
   flex: 1;
-  gap: 8px;
+  gap: 2px;
   overflow: hidden;
 }
 
@@ -58,7 +58,7 @@
 }
 
 .layout-right-sidebar-wrapper.open {
-  width: 500px;
+  width: 550px;
   transition: width 0s;
 }
 
@@ -70,7 +70,7 @@
 
 /* 내부 컨테이너를 Transform으로 이동시켜 레이아웃 재계산(랙)을 방지 */
 .layout-right-sidebar-inner {
-  width: 500px;
+  width: 550px;
   background-color: var(--bg-color-panel);
   display: flex;
   flex-direction: column;

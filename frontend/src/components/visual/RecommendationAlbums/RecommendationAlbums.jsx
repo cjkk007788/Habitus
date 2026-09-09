@@ -8,6 +8,7 @@ import './RecommendationAlbums.css';
 import { fetchArtistsByGenre } from '../../../api/musicbrainz/genreApi';
 import { fetchBooksByGenre } from '../../../api/googlebooks/bookApi';
 import { fetchMoviesByGenre } from '../../../api/tmdb/movieApi';
+import AnimatedText from '../../common/AnimatedText/AnimatedText';
 
 // TTL 상수 (밀리초)
 const GENRE_ITEMS_TTL = 15 * 60 * 1000; // 장르별 아이템: 15분
@@ -201,7 +202,9 @@ export default function RecommendationAlbums({ category, genre, onBack }) {
             </button>
           )}
           <div>
-            <h1 style={{ textTransform: 'capitalize' }}>{genreName} {category}s</h1>
+            <h1 className="hover-trigger" style={{ textTransform: 'capitalize', cursor: 'default' }}>
+              <AnimatedText text={`${genreName} ${category}s`} />
+            </h1>
             <p>Top {category}s for {genreName}.</p>
           </div>
         </div>

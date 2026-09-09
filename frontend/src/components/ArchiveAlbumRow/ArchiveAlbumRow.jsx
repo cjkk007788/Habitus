@@ -1,6 +1,7 @@
 import React from "react";
 import { X } from "lucide-react";
 import MediaAlbum from "../common/MediaAlbum/MediaAlbum";
+import AnimatedText from "../common/AnimatedText/AnimatedText";
 import useSidebarStore from "../../store/sidebar/useSidebarStore";
 import { useArchiveStore } from "../../store/archive";
 import "./ArchiveAlbumRow.css";
@@ -110,12 +111,12 @@ export default function ArchiveAlbumRow({ album, onRemove }) {
           {displayCategory}
         </span>
         <h2 
-          className="archive-album-row__title"
+          className="archive-album-row__title hover-trigger"
           style={{ cursor: album.type === 'album' ? 'pointer' : 'default' }}
           onClick={handleAlbumHeaderClick}
           title={album.type === 'album' ? "앨범 편집하기" : ""}
         >
-          {albumTitle || "Untitled Album"}
+          {albumTitle ? <AnimatedText text={albumTitle} /> : <AnimatedText text="Untitled Album" />}
         </h2>
         <span className="archive-album-row__count">{resolvedItems.length} items</span>
         

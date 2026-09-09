@@ -3,6 +3,7 @@ import { fetchCurationItems } from '../../../api/curationApi';
 import MediaAlbum from '../../common/MediaAlbum/MediaAlbum';
 import useSidebarStore from '../../../store/sidebar/useSidebarStore';
 import useCacheStore from '../../../store/system/cacheStore';
+import AnimatedText from '../../common/AnimatedText/AnimatedText';
 import './CuratedRow.css';
 
 // TTL 상수 (밀리초)
@@ -145,7 +146,9 @@ export default function CuratedRow({ category, curationId, title }) {
   if (isLoading) {
     return (
       <div className="curated-row-container">
-        <h2 className="curated-row-title">{title}</h2>
+        <h2 className="curated-row-title hover-trigger" style={{ cursor: 'default' }}>
+          <AnimatedText text={title} />
+        </h2>
         <div style={{ padding: '0 20px', color: 'var(--text-secondary)' }}>Loading...</div>
       </div>
     );
@@ -156,8 +159,10 @@ export default function CuratedRow({ category, curationId, title }) {
   }
 
   return (
-    <div className="curated-row-container">
-      <h2 className="curated-row-title">{title}</h2>
+    <div className="curated-row-container" id={`curation-${curationId}`}>
+      <h2 className="curated-row-title hover-trigger" style={{ cursor: 'default' }}>
+        <AnimatedText text={title} />
+      </h2>
       <div className="curated-row-scroll media-album-grid">
         {items.map((item, index) => (
           <div key={item._key + index} className="curated-row-item">

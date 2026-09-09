@@ -3,9 +3,10 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 import MainLayout from './layouts/MainLayout';
 import Digging from './pages/Digging';
-import Archive from './pages/Archive';
-import ArchiveContent from './pages/ArchiveContent';
-import ArchiveReport from './pages/ArchiveReport';
+import Archive from './pages/Archive/Archive';
+import ArchiveContent from './pages/Archive/Content/ArchiveContent';
+import ArchiveReport from './pages/Archive/Report/ArchiveReport';
+import ArchiveCustom from './pages/Archive/Custom/ArchiveCustom';
 import Social from './pages/Social';
 
 /*
@@ -39,6 +40,7 @@ function App() {
           <Route index element={<Navigate to="content" replace />} />
           <Route path="content" element={<ArchiveContent />} />
           <Route path="report" element={<ArchiveReport />} />
+          <Route path="custom" element={<ArchiveCustom />} />
         </Route>
         <Route path="/social" element={<Social />} />
       </Route>

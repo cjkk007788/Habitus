@@ -1,123 +1,28 @@
-import React, { useState, useRef } from 'react';
-import { PanelRight, Search, X } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { PanelRight } from 'lucide-react';
 import useSidebarStore from '../../../store/sidebar/useSidebarStore';
-import useSearchStore from '../../../store/search/useSearchStore';
+import Navbar from '../Navbar/Navbar';
 import './TopHeader.css';
-
-const FILTERS = [
-  { id: 'music', label: 'Music' },
-  { id: 'movie', label: 'Movie' },
-  { id: 'book',  label: 'Book'  },
-  { id: 'all',   label: 'All'   },
-];
 
 export default function TopHeader() {
   const { toggleRightSidebar, isRightSidebarOpen } = useSidebarStore();
-  const {
-    searchQuery, searchFilter,
-    setSearchQuery, setSearchFilter,    clearSearch,
-  } = useSearchStore();
-
-  const [inputValue, setInputValue] = useState('');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const inputRef = useRef(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // 검색 실행: 전역 상태에 query를 set하고 Digging 페이지로 이동
-  const handleSearch = () => {
-    const trimmed = inputValue.trim();
-    if (!trimmed) return;
-    setSearchQuery(trimmed);
-    // Digging 페이지가 아닐 때만 이동
-    if (!location.pathname.startsWith('/digging')) {
-      navigate('/digging');
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSearch();
-    if (e.key === 'Escape') {
-      setInputValue('');
-      clearSearch();
-      inputRef.current?.blur();
-    }
-  };
-
-  const handleClear = () => {
-    setInputValue('');
-    clearSearch();
-    inputRef.current?.focus();
-  };
-
-  const handleFilterSelect = (filterId) => {
-    setSearchFilter(filterId);
-    setIsFilterOpen(false);
-    // 이미 검색어가 있으면 필터 변경 시 재검색 트리거
-    if (searchQuery) {
-      setSearchQuery(searchQuery); // 동일 값 재set → Digging의 useEffect가 감지
-    }
-  };
-
-  const activeFilterLabel = FILTERS.find(f => f.id === searchFilter)?.label || 'Music';
 
   return (
     <header className="top-header">
       <div className="top-header-left">
-        <h1 className="logo">HABITUS</h1>
+        <h1 
+          className="logo"
+          onMouseEnter={() => window.dispatchEvent(new CustomEvent('logoHover'))}
+          onMouseLeave={() => window.dispatchEvent(new CustomEvent('logoLeave'))}
+          style={{ cursor: 'pointer' }}
+        >
+          HABITUS
+        </h1>
       </div>
 
-      {/* Center: 검색창 + 필터 */}
+      {/* Center: 네비게이션 탭 (Digging, Archive, Social) */}
       <div className="top-header-center">
-        <div className="search-bar-wrapper">
-          {/* 필터 드롭다운 트리거 */}
-          <div className="search-filter-trigger" onClick={() => setIsFilterOpen(o => !o)}>
-            <span className="search-filter-label">{activeFilterLabel}</span>
-            <span className="search-filter-arrow">{isFilterOpen ? '▲' : '▼'}</span>
-          </div>
-
-          <div className="search-divider" />
-
-          {/* 검색 아이콘 + 인풋 */}
-          <Search className="search-icon" size={16} />
-          <input
-            ref={inputRef}
-            type="text"
-            className="search-input"
-            placeholder={`Search ${activeFilterLabel}...`}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-
-          {/* 클리어 버튼 */}
-          {inputValue && (
-            <button className="search-clear-btn" onClick={handleClear} title="Clear">
-              <X size={14} />
-            </button>
-          )}
-
-          {/* 검색 버튼 */}
-          <button className="search-submit-btn" onClick={handleSearch} title="Search">
-            Search
-          </button>
-
-          {/* 필터 드롭다운 */}
-          {isFilterOpen && (
-            <div className="search-filter-dropdown">
-              {FILTERS.map(f => (
-                <button
-                  key={f.id}
-                  className={`search-filter-option ${searchFilter === f.id ? 'active' : ''}`}
-                  onClick={() => handleFilterSelect(f.id)}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <Navbar />
       </div>
 
       <div className="top-header-right">

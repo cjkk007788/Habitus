@@ -1,5 +1,6 @@
 import React from 'react';
 import { Library } from 'lucide-react';
+import AnimatedText from '../../common/AnimatedText/AnimatedText';
 
 export default function LeftSidebarHeader({
   isCollapsed,
@@ -16,7 +17,9 @@ export default function LeftSidebarHeader({
         title={isCollapsed ? "Expand Library" : "Collapse Library"}
       >
         <Library size={24} color="#b3b3b3" />
-        <h2>My library</h2>
+        <h2 className="hover-trigger">
+          <AnimatedText text="My library" />
+        </h2>
       </div>
 
       <div style={{ position: 'relative' }}>

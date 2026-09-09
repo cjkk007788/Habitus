@@ -24,16 +24,11 @@ export function generateGradient(seed) {
   // Base hue based on the hash (0-360)
   const baseHue = hash % 360;
   
-  // Second hue is adjacent or complementary for a premium look (+40 to +120 degrees)
-  const secondHue = (baseHue + 40 + (hash % 80)) % 360;
+  // Vintage pastel / muted tone (Solid color)
+  // Saturation: 35-45% (subtle), Lightness: 60-70% (pastel but readable)
+  const saturation = 35 + (hash % 10); 
+  const lightness = 60 + (hash % 10);
   
-  // High saturation (70-90%) and balanced lightness (40-60%) for vibrant dark mode look
-  const color1 = `hsl(${baseHue}, 80%, 50%)`;
-  const color2 = `hsl(${secondHue}, 85%, 45%)`;
-  
-  // Determine gradient angle (45, 90, 135, or 180 degrees)
-  const angleOptions = [45, 90, 135, 180];
-  const angle = angleOptions[hash % angleOptions.length];
-  
-  return `linear-gradient(${angle}deg, ${color1}, ${color2})`;
+  // Return a solid pastel color instead of a gradient
+  return `hsl(${baseHue}, ${saturation}%, ${lightness}%)`;
 }

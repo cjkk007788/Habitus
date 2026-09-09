@@ -21,6 +21,12 @@
   color: var(--text-logo);
   margin: 0;
   letter-spacing: 1px;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.logo:hover {
+  opacity: 0.8;
+  filter: blur(0.5px);
 }
 
 /* ─── Center: 검색 영역 ─────────────────────────── */

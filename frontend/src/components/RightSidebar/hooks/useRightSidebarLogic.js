@@ -100,7 +100,7 @@ export default function useRightSidebarLogic() {
   const isMoviePerson = item?.itemType === 'movie_person';
   const isBook = item?.itemType === 'book';
 
-  const categoryLabel = isMusic ? '🎵 Music' : isMovie ? '🎬 Movie' : isMoviePerson ? '👤 Movie Person' : isBook ? '📚 Book' : 'Content';
+  const categoryLabel = isMusic ? '🎵 Music' : isMovie ? '🎬 Movie' : isMoviePerson ? '👤 Movie Person' : isBook ? '📚 Book' : item?.mixTitle ? '📦 Mix' : 'Content';
 
   const getCreatorName = (it) => {
     if (!it) return 'Unknown';

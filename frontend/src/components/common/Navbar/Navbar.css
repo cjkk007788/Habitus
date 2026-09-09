@@ -2,47 +2,106 @@
 /* Navbar 공통 스타일 */
 
 .title_container {
-    text-align: center;
-    padding-top: 0px;
-}
-
-.site_title {
-    color: chocolate;
-    font-size: 24px;
-    margin: 20px 0px 10px 0px;
+    display: none; /* Removed, no longer needed */
 }
 
 .nav_menu ul {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: center;
     list-style: none;
-    font-size: 30px;
-    padding: 0px;
-    margin: 0px;
-    gap: 50px;
+    padding: 0;
+    margin: 0;
+    gap: 48px;
 }
 
 .nav_menu ul li {
-    padding: 0 10px;
-    text-align: center;
-    justify-content: center;
-}
-
-.nav_menu ul li a {
-    color: gray;
-    text-decoration: none;
-}
-
-.nav_menu ul li a:hover {
-    color: black;
-}
-
-.nav_menu ul li a.active {
-    color: black;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    position: relative; /* For Dropdown Positioning */
 }
 
 .nav_menu ul li h3 {
-    color: inherit;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.nav_menu ul li a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.nav_menu ul li a:hover {
+    color: var(--text-primary);
+}
+
+.nav_menu ul li a.active {
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 4px;
+}
+
+
+
+/* Dropdown (Gumloop Style) */
+.nav-dropdown {
+    position: absolute;
+    top: calc(100% + 15px); /* Add a little gap */
+    left: 50%;
+    transform: translateX(-50%) translateY(15px);
+    background-color: var(--bg-color-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 140px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+}
+
+/* 
+ * Pseudo-element to act as a bridge between the nav item and the dropdown.
+ * This prevents the dropdown from disappearing when the cursor moves across the gap.
+ */
+.nav_menu ul li.has-dropdown::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 25px; /* Must cover the gap to the dropdown */
+}
+
+.nav_menu ul li.has-dropdown:hover .nav-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-item {
+    padding: 10px 16px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    transition: background-color 0.2s, color 0.2s;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-color-hover);
+    color: var(--text-primary);
 }

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.routes import items, albums, mixes, search, music_genres, book_genres, movie_genres, curation
+from app.api.routes import items, albums, mixes, search, music_genres, book_genres, movie_genres, curation, report
 
 api_router = APIRouter()
 
@@ -12,3 +12,4 @@ api_router.include_router(music_genres.router, prefix="/genres/music", tags=["mu
 api_router.include_router(book_genres.router, prefix="/genres/book", tags=["book_genres"])
 api_router.include_router(movie_genres.router, prefix="/genres/movie", tags=["movie_genres"])
 api_router.include_router(curation.router, prefix="/curation", tags=["curation"])
+api_router.include_router(report.router, prefix="/report", tags=["report"])
