@@ -35,6 +35,7 @@ export default function LibraryItem({ data, isSelectionMode }) {
   const viewType = data._viewType || 'item';
   const location = useLocation();
   const isArchivePage = location.pathname.startsWith('/archive');
+  const isContentTab = location.pathname === '/archive' || location.pathname.startsWith('/archive/content');
 
   const openRightSidebar = useSidebarStore((state) => state.openRightSidebar);
   const pushAlbumToArchive = useArchiveUIStore((state) => state.pushAlbumToArchive);
@@ -138,15 +139,16 @@ export default function LibraryItem({ data, isSelectionMode }) {
           handleAddBlock(e);
           return;
         }
-        // Archive 페이지에서 카드를 클릭하면 → Archive 행에 추가
-        if (isArchivePage) {
+
+        // Archive 페이지의 Content 탭일 때는 Archive 보드(Curation row)에 카드를 추가
+        if (isArchivePage && isContentTab) {
           if (viewType === 'album') {
             pushAlbumToArchive(data.id);
           } else if (viewType === 'mix') {
             useArchiveUIStore.getState().pushMixToArchive(data.id);
           }
         } else {
-          // 그 외(Digging 등) 페이지에서만 우측 사이드바 열기
+          // 그 외 탭(Report, Custom 등)이나 Digging 페이지에서는 우측 사이드바 열기
           openRightSidebar(data);
         }
       }}

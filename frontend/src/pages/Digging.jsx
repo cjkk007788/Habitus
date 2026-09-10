@@ -7,6 +7,7 @@ import useSearchStore from '../store/search/useSearchStore';
 import AnimatedText from '../components/common/AnimatedText/AnimatedText';
 import BookmarkMenu from '../components/common/BookmarkMenu/BookmarkMenu';
 import { searchContent } from '../api/searchApi';
+import useDebounce from '../hooks/useDebounce';
 
 // 카테고리별 큐레이션 행 정의
 // 나중에 큐레이션 함수, 큐레이션 다양하게 만드어서 파일 분리
@@ -36,6 +37,8 @@ export default function Digging() {
   } = useSearchStore();
 
   const activeCategory = (searchFilter && searchFilter !== 'all') ? searchFilter : 'music';
+  
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   useEffect(() => {
     setSelectedGenre(null); // Reset genre when category changes via Navbar
@@ -49,9 +52,9 @@ export default function Digging() {
     }
   }, [activeCategory]);
 
-  // ─── 검색어 변경 시 API 호출 ───────────────────────
+  // ─── 검색어 변경 시 API 호출 (디바운스 적용) ───────────────────────
   useEffect(() => {
-    if (!searchQuery.trim()) {
+    if (!debouncedSearchQuery.trim()) {
       setSearchResults([]);
       return;
     }
@@ -62,7 +65,7 @@ export default function Digging() {
       setIsSearching(true);
       setSearchError(null);
       try {
-        const data = await searchContent(searchQuery, searchFilter, 12);
+        const data = await searchContent(debouncedSearchQuery, searchFilter, 12);
         if (!cancelled) setSearchResults(data.results || []);
       } catch (err) {
         if (!cancelled) {
@@ -76,7 +79,7 @@ export default function Digging() {
 
     runSearch();
     return () => { cancelled = true; };
-  }, [searchQuery, searchFilter]);
+  }, [debouncedSearchQuery, searchFilter]);
 
 
 

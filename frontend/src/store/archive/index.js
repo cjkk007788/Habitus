@@ -13,10 +13,25 @@ export const useArchiveStore = create(
       ...createAlbumItemSlice(...a),
       ...createMixSlice(...a),
 
-      // 모든 데이터 삭제 (테스트용)
-      clearArchive: () => {
-        const [set] = a;
-        set({ items: [], albums: [], mixes: [], stagedItems: [] });
+      // 모든 데이터 삭제
+      clearArchive: async () => {
+        try {
+          const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+          const response = await fetch(`${baseUrl}/items/clear_all`, {
+            method: 'DELETE',
+          });
+
+          if (!response.ok) {
+            console.error('Failed to clear backend data');
+            return;
+          }
+
+          const [set] = a;
+          set({ items: [], albums: [], mixes: [], stagedItems: [] });
+          console.log('[archiveStore] Backend and local data cleared successfully!');
+        } catch (error) {
+          console.error('Error clearing archive:', error);
+        }
       },
 
       // Mock 데이터 불러오기 (개발/테스트용)

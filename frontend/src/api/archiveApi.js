@@ -207,3 +207,45 @@ export const updateMixAPI = async (mixId, mixData) => {
     throw error;
   }
 };
+
+export const deleteItemAPI = async (itemId) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/items/${itemId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`Item delete HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    throw error;
+  }
+};
+
+export const deleteAlbumAPI = async (albumId) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/albums/${albumId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`Album delete HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error deleting album:', error);
+    throw error;
+  }
+};
+
+export const deleteMixAPI = async (mixId) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/mixes/${mixId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`Mix delete HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error deleting mix:', error);
+    throw error;
+  }
+};

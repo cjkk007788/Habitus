@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { deleteMixAPI } from '../../api/archiveApi';
 
 export const createMixSlice = (set, get) => ({
   mixes: [],
@@ -125,9 +126,14 @@ export const createMixSlice = (set, get) => ({
   },
 
   // Mix 삭제 (Hard Delete)
-  removeMix: (mixId) => {
-    set((state) => ({
-      mixes: state.mixes.filter(mix => mix.id !== mixId)
-    }));
+  removeMix: async (mixId) => {
+    try {
+      await deleteMixAPI(mixId);
+      set((state) => ({
+        mixes: state.mixes.filter(mix => mix.id !== mixId)
+      }));
+    } catch (error) {
+      console.error("Failed to delete mix API:", error);
+    }
   },
 });

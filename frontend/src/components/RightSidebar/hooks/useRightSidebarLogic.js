@@ -42,7 +42,12 @@ export default function useRightSidebarLogic() {
 
     if (activeSidebarItem) {
       if (activeSidebarItem._viewType === 'album' || (activeSidebarItem.id && String(activeSidebarItem.id).startsWith('album_'))) {
-        setEditingAlbumId(activeSidebarItem.id);
+        // 가상 앨범(리포트)인 경우 실제 DB 저장을 방지하기 위해 editingAlbumId를 설정하지 않음
+        if (activeSidebarItem.id && String(activeSidebarItem.id).startsWith('report-virtual-')) {
+          setEditingAlbumId(null);
+        } else {
+          setEditingAlbumId(activeSidebarItem.id);
+        }
         setStagedAlbumTitle(activeSidebarItem.albumTitle || '');
         const albumItems = (activeSidebarItem.itemIds || [])
           .map(id => items.find(i => i.id === id))

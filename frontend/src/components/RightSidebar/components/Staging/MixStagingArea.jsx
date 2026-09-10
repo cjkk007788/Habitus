@@ -1,5 +1,5 @@
 import React from 'react';
-import { useArchiveStore } from '../../../store/archive';
+import { useArchiveStore } from '../../../../store/archive';
 import { Trash2 } from 'lucide-react';
 import './MixStagingArea.css';
 

@@ -59,6 +59,8 @@ export default function CuratedRow({ category, curationId, title }) {
             }
           }
 
+          const genres = item.genre ? [item.genre] : [];
+
           return {
             _key: item.mbid || item.name + idx,
             id: item.mbid || item.name,
@@ -69,6 +71,10 @@ export default function CuratedRow({ category, curationId, title }) {
             previewUrl: item.preview_url || null,
             coverImages: [],
             bgColor: fallbackColors[idx % fallbackColors.length],
+            genres: genres,
+            userMeta: {
+              genreTags: genres
+            },
             mediaMeta: {
               contributors: [{ name: isArtist ? '' : (item.artist?.name || 'Unknown Artist') }],
               playcount: item.playcount,
@@ -80,8 +86,23 @@ export default function CuratedRow({ category, curationId, title }) {
           };
         });
       } else if (category === 'movie') {
+        const TMDB_GENRE_MAP = {
+          28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy',
+          80: 'Crime', 99: 'Documentary', 18: 'Drama', 10751: 'Family',
+          14: 'Fantasy', 36: 'History', 27: 'Horror', 10402: 'Music',
+          9648: 'Mystery', 10749: 'Romance', 878: 'Science Fiction',
+          10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
+        };
+
         formattedItems = data.map((item, idx) => {
           const isPerson = curationId === 'trending_persons';
+          const genres = [];
+          if (!isPerson && Array.isArray(item.genre_ids)) {
+            item.genre_ids.forEach(id => {
+              if (TMDB_GENRE_MAP[id]) genres.push(TMDB_GENRE_MAP[id]);
+            });
+          }
+
           return {
             _key: item.id,
             id: item.id,
@@ -93,6 +114,10 @@ export default function CuratedRow({ category, curationId, title }) {
             image_url: isPerson ? item.image_url : item.poster_path,
             coverImages: [],
             bgColor: fallbackColors[idx % fallbackColors.length],
+            genres: genres,
+            userMeta: {
+              genreTags: genres
+            },
             mediaMeta: {
               releaseYear: item.release_date ? item.release_date.substring(0, 4) : 'Unknown',
               overview: item.overview || '',

@@ -14,98 +14,109 @@ router = APIRouter()
 # ─────────────────────────────────────────────
 
 async def _search_music(query: str, limit: int = 10) -> List[Dict[str, Any]]:
-    """
-    MusicBrainz에서 아티스트 + 트랙을 동시에 검색하고
-    통합 포맷으로 변환합니다.
-    iTunes에서 아트워크/미리듣기 URL을 best-effort로 보강합니다.
-    """
+    # 1. MusicBrainz에서 아티스트와 트랙 동시 검색
     artist_task = musicbrainz.search_artist(query)
     recording_task = musicbrainz.search_recording(query)
+    artist_data, recording_data = await asyncio.gather(artist_task, recording_task, return_exceptions=True)
 
-    artist_data, recording_data = await asyncio.gather(
-        artist_task, recording_task, return_exceptions=True
-    )
+    results = []
 
-    results: List[Dict[str, Any]] = []
+    # 2. 아티스트 처리 비동기 함수 정의
+    async def process_artist(artist):
+        cover_url = None
+        try:
+            cover_url = await itunes.get_artist_image_url(artist.get("name", ""))
+        except Exception:
+            pass
+        return {
+            "external_id": artist.get("id", ""),
+            "external_source": "musicbrainz",
+            "item_type": "music_artist",
+            "title": artist.get("name", "Unknown Artist"),
+            "subtitle": artist.get("type", "") + (" · " + artist.get("country", "") if artist.get("country") else ""),
+            "cover_image_url": cover_url,
+            "preview_url": None,
+            "release_year": None,
+            "metadata": {
+                "mbid": artist.get("id"),
+                "type": artist.get("type"),
+                "country": artist.get("country"),
+                "tags": [t["name"] for t in artist.get("tags", [])[:5]] if artist.get("tags") else [],
+            },
+        }
 
-    # 아티스트 결과
+    # 3. 트랙 처리 비동기 함수 정의
+    async def process_recording(rec):
+        artist_name = "Unknown Artist"
+        artist_credits = rec.get("artist-credit", [])
+        if artist_credits:
+            artist_name = artist_credits[0].get("name", "Unknown Artist")
+
+        cover_url = None
+        preview_url = None
+        itunes_genre = None
+        try:
+            itunes_data = await itunes.search_track(artist=artist_name, track=rec.get("title", ""))
+            if itunes_data:
+                cover_url = itunes_data.get("artwork_url")
+                if cover_url:
+                    cover_url = cover_url.replace("100x100bb", "300x300bb")
+                preview_url = itunes_data.get("preview_url")
+                itunes_genre = itunes_data.get("primary_genre_name")
+        except Exception:
+            pass
+
+        release_year = None
+        releases = rec.get("releases", [])
+        if releases:
+            date = releases[0].get("date", "")
+            if date and len(date) >= 4:
+                try:
+                    release_year = int(date[:4])
+                except ValueError:
+                    pass
+                    
+        tags = [t["name"] for t in rec.get("tags", [])[:5]] if rec.get("tags") else []
+        if itunes_genre and itunes_genre not in tags:
+            tags.append(itunes_genre)
+
+        return {
+            "external_id": rec.get("id", ""),
+            "external_source": "musicbrainz",
+            "item_type": "music",
+            "title": rec.get("title", "Unknown Track"),
+            "subtitle": artist_name,
+            "cover_image_url": cover_url,
+            "preview_url": preview_url,
+            "release_year": release_year,
+            "metadata": {
+                "mbid": rec.get("id"),
+                "artist": artist_name,
+                "releases": [r.get("title", "") for r in releases[:3]],
+                "duration_ms": rec.get("length"),
+                "tags": tags,
+            },
+        }
+
+    # 4. 모든 작업 모아서 동시에 실행 (병렬 처리)
+    tasks = []
+    
     if isinstance(artist_data, dict) and "artists" in artist_data:
         for artist in artist_data["artists"][:limit // 2]:
-            # iTunes에서 아티스트 이미지 시도
-            cover_url = None
-            try:
-                cover_url = await itunes.get_artist_image_url(artist.get("name", ""))
-            except Exception:
-                pass
-
-            results.append({
-                "external_id": artist.get("id", ""),
-                "external_source": "musicbrainz",
-                "item_type": "music_artist",
-                "title": artist.get("name", "Unknown Artist"),
-                "subtitle": artist.get("type", "") + (" · " + artist.get("country", "") if artist.get("country") else ""),
-                "cover_image_url": cover_url,
-                "preview_url": None,
-                "release_year": None,
-                "metadata": {
-                    "mbid": artist.get("id"),
-                    "type": artist.get("type"),
-                    "country": artist.get("country"),
-                    "tags": [t["name"] for t in artist.get("tags", [])[:5]] if artist.get("tags") else [],
-                },
-            })
-
-    # 트랙 결과
+            tasks.append(process_artist(artist))
+            
     if isinstance(recording_data, dict) and "recordings" in recording_data:
         for rec in recording_data["recordings"][:limit // 2]:
-            artist_name = "Unknown Artist"
-            artist_credits = rec.get("artist-credit", [])
-            if artist_credits:
-                artist_name = artist_credits[0].get("name", "Unknown Artist")
-
-            # iTunes에서 트랙 아트워크 + 미리듣기 보강
-            cover_url = None
-            preview_url = None
-            try:
-                itunes_data = await itunes.search_track(artist=artist_name, track=rec.get("title", ""))
-                if itunes_data:
-                    cover_url = itunes_data.get("artwork_url")
-                    if cover_url:
-                        cover_url = cover_url.replace("100x100bb", "300x300bb")
-                    preview_url = itunes_data.get("preview_url")
-            except Exception:
-                pass
-
-            # 릴리즈 연도 추출
-            release_year = None
-            releases = rec.get("releases", [])
-            if releases:
-                date = releases[0].get("date", "")
-                if date and len(date) >= 4:
-                    try:
-                        release_year = int(date[:4])
-                    except ValueError:
-                        pass
-
-            results.append({
-                "external_id": rec.get("id", ""),
-                "external_source": "musicbrainz",
-                "item_type": "music",          # RightSidebar isMusic = music | music_artist
-                "title": rec.get("title", "Unknown Track"),
-                "subtitle": artist_name,
-                "cover_image_url": cover_url,
-                "preview_url": preview_url,
-                "release_year": release_year,
-                "metadata": {
-                    "mbid": rec.get("id"),
-                    "artist": artist_name,
-                    "releases": [r.get("title", "") for r in releases[:3]],
-                    "duration_ms": rec.get("length"),
-                },
-            })
+            tasks.append(process_recording(rec))
+            
+    # 실행 및 결과 합치기
+    if tasks:
+        processed_items = await asyncio.gather(*tasks, return_exceptions=True)
+        for item in processed_items:
+            if isinstance(item, dict):
+                results.append(item)
 
     return results
-
 
 async def _search_movie(query: str, limit: int = 10) -> List[Dict[str, Any]]:
     """TMDB에서 영화와 영화인(감독/배우)을 동시에 검색합니다."""

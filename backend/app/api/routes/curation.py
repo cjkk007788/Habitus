@@ -32,6 +32,8 @@ async def get_music_curation_items(curation_id: str, page: int = 1, limit: int =
                         track["preview_url"] = itunes_data["preview_url"]
                     if itunes_data.get("apple_music_url"):
                         track["apple_music_url"] = itunes_data["apple_music_url"]
+                    if itunes_data.get("primary_genre_name"):
+                        track["genre"] = itunes_data["primary_genre_name"]
             return track
         
         enriched_tracks = await asyncio.gather(*(enrich_track(t) for t in tracks))

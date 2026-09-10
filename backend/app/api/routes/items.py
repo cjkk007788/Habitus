@@ -2,12 +2,39 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
+import httpx
+import logging
 
 from app.api.dependencies import get_db, get_current_user
-from app.models.archive import Item, User
+from app.models.archive import Item, User, Album, Mix, mix_albums, mix_items, album_items
 from app.schemas.item import ItemCreate, ItemUpdate, ItemResponse
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+@router.delete("/clear_all", status_code=status.HTTP_204_NO_CONTENT)
+def clear_all_user_data(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """유저의 모든 아카이브 데이터(아이템, 앨범, 믹스)를 삭제합니다."""
+    user_mix_ids = db.query(Mix.id).filter(Mix.user_id == current_user.id)
+    user_album_ids = db.query(Album.id).filter(Album.user_id == current_user.id)
+
+    # 중간 테이블부터 명시적으로 삭제 (CASCADE 부재 대응)
+    db.execute(mix_albums.delete().where(mix_albums.c.mix_id.in_(user_mix_ids)))
+    db.execute(mix_items.delete().where(mix_items.c.mix_id.in_(user_mix_ids)))
+    db.execute(album_items.delete().where(album_items.c.album_id.in_(user_album_ids)))
+
+    # 본 테이블 bulk delete
+    db.query(Album).filter(Album.user_id == current_user.id).delete(synchronize_session=False)
+    db.query(Mix).filter(Mix.user_id == current_user.id).delete(synchronize_session=False)
+    db.query(Item).filter(Item.user_id == current_user.id).delete(synchronize_session=False)
+
+    db.commit()
+    return None
 
 #If frontend sent post address /, this function working
 #Make jason data to pydantic object
@@ -20,58 +47,77 @@ router = APIRouter()
 #현재 유저 객체를 생성한다고 이해
 @router.post("/", response_model=ItemResponse, status_code=status.HTTP_201_CREATED)
 def create_item(
-    #parameter
-    #ItemCreate in schmeas itemclass inherites basemodel from pyndatic it clear validation
-    #ItemCreate has attributes title, item_type, external_id, 
-    #external_source, rating, impression, description, 
-    #cover_image, dominant_color, genres, is_public, media_meta, 
-    #user_meta, links
-    
     item_in: ItemCreate,
-    #아이템 크리에이트는 basemodel 상속 받아서 pydantic 스키마를 체크
-    #json data터의 body를 검증한다.
-    #검증후에 error가 없으면 item_in에 전달
-    #문제가 있으면 422 error 반환
-    #DB연결
     db: Session = Depends(get_db),
-    #의존성 주입
-    #get_db is function that make a session, so we can use db in this function
-    #get_current_user is function that get current user
-    #User 연결
     current_user: User = Depends(get_current_user)
-    #checking http imformation and checking to token is real
-    #connecting User object current_user
-
-    #Depends is connecting DB with user
 ):
-    # Pydantic 스키마를 dictionarly
     item_data = item_in.model_dump(exclude={"links"})
-    #dictionary --> SQLALchemy 변환
+
+    if item_data.get("item_type") == "movie" and item_data.get("external_source") == "tmdb":
+        tmdb_id = item_data.get("external_id")
+        if tmdb_id:
+            try:
+                headers = {"accept": "application/json"}
+                if settings.TMDB_READ_ACCESS_TOKEN:
+                    headers["Authorization"] = f"Bearer {settings.TMDB_READ_ACCESS_TOKEN}"
+                
+                url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
+                params = {"append_to_response": "credits"}
+                if not settings.TMDB_READ_ACCESS_TOKEN and settings.TMDB_API_KEY:
+                    params["api_key"] = settings.TMDB_API_KEY
+
+                res = httpx.get(url, headers=headers, params=params, timeout=5.0)
+                if res.status_code == 200:
+                    data = res.json()
+                    credits = data.get("credits", {})
+                    
+                    directors = [c["name"] for c in credits.get("crew", []) if c.get("job") == "Director"]
+                    cast = [c["name"] for c in credits.get("cast", [])[:5]]
+                    
+                    if directors or cast:
+                        media_meta = item_data.get("media_meta") or {}
+                        
+                        existing_artists = media_meta.get("artists", [])
+                        if not isinstance(existing_artists, list):
+                            existing_artists = [existing_artists] if existing_artists else []
+                        
+                        for d in directors:
+                            if d not in existing_artists:
+                                existing_artists.append(d)
+                        
+                        media_meta["artists"] = existing_artists
+                        
+                        contributors = media_meta.get("contributors", [])
+                        if not isinstance(contributors, list):
+                            contributors = []
+                            
+                        contributors = [c for c in contributors if not (isinstance(c, dict) and "..." in c.get("name", ""))]
+                        
+                        for d in directors:
+                            if not any(c.get("name") == d and c.get("role") == "Director" for c in contributors):
+                                contributors.append({"name": d, "role": "Director"})
+                        for a in cast:
+                            if not any(c.get("name") == a and c.get("role") == "Actor" for c in contributors):
+                                contributors.append({"name": a, "role": "Actor"})
+                            
+                        media_meta["contributors"] = contributors
+                        item_data["media_meta"] = media_meta
+            except Exception as e:
+                logger.warning(f"Failed to fetch TMDB credits for item {tmdb_id}: {e}")
+
     db_item = Item(**item_data, user_id=current_user.id)
-    #DB에 아이템 저장
     db.add(db_item)
-    #DB 커밋
     db.commit()
-    #DB 갱신
     db.refresh(db_item)
-    
-    # TODO: Links 저장 로직 추가 (ItemLink 테이블)
-    
     return db_item
 
-#response_model = List[ItemResponse] is telling to fast api engine that the return type is list of ItemResponse
-#getting user's item lists
 @router.get("/", response_model=List[ItemResponse])
 def read_items(
     skip: int = 0,
     limit: int = 100,
-    #conntecting DB
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
-    
 ):
-    #this is ORM.
-    #Find Item table in db, User.id = current_id
     items = db.query(Item).filter(Item.user_id == current_user.id).offset(skip).limit(limit).all()
     return items
 

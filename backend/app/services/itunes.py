@@ -35,6 +35,7 @@ async def search_track(artist: str, track: str) -> Optional[Dict[str, Any]]:
             "track_name": result.get("trackName"),
             "artist_name": result.get("artistName"),
             "apple_music_url": result.get("trackViewUrl"),
+            "primary_genre_name": result.get("primaryGenreName"),
         }
 
     return None

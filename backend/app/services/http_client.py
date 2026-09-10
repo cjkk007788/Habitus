@@ -76,6 +76,16 @@ async def _ensure_tmdb_lock() -> asyncio.Lock:
         _tmdb_lock = asyncio.Lock()
     return _tmdb_lock
 
+# ── iTunes Rate Limiter (approx 20 req/min -> safe limit 5 req/sec / 0.2s) ──
+_last_itunes_request_time = 0.0
+_itunes_lock: Optional[asyncio.Lock] = None
+
+async def _ensure_itunes_lock() -> asyncio.Lock:
+    global _itunes_lock
+    if _itunes_lock is None:
+        _itunes_lock = asyncio.Lock()
+    return _itunes_lock
+
 _shared_client: Optional[httpx.AsyncClient] = None
 
 def _get_client() -> httpx.AsyncClient:
@@ -204,6 +214,7 @@ async def api_request(
     global _last_discogs_request_time
     global _last_googlebooks_request_time
     global _last_tmdb_request_time
+    global _last_itunes_request_time
 
     default_headers = {"User-Agent": APP_USER_AGENT}
     if headers:
@@ -246,6 +257,15 @@ async def api_request(
                 if elapsed < 0.05:
                     await asyncio.sleep(0.05 - elapsed)
                 _last_tmdb_request_time = time.time()
+                response = await client.get(url, params=params, headers=default_headers, timeout=timeout)
+        elif "itunes.apple.com" in url:
+            lock = await _ensure_itunes_lock()
+            async with lock:
+                now = time.time()
+                elapsed = now - _last_itunes_request_time
+                if elapsed < 0.2:
+                    await asyncio.sleep(0.2 - elapsed)
+                _last_itunes_request_time = time.time()
                 response = await client.get(url, params=params, headers=default_headers, timeout=timeout)
         else:
             response = await client.get(url, params=params, headers=default_headers, timeout=timeout)

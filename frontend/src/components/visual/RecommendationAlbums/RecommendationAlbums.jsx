@@ -33,11 +33,16 @@ export default function RecommendationAlbums({ category, genre, onBack }) {
   
   const observerTarget = React.useRef(null);
   const isLoadingRef = React.useRef(false); 
+  const hasMoreRef = React.useRef(true);
   
   const genreRef = React.useRef(genreId);
   useEffect(() => {
     genreRef.current = genreId;
   }, [genreId]);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
 
   useEffect(() => {
     setItems([]);
@@ -47,6 +52,8 @@ export default function RecommendationAlbums({ category, genre, onBack }) {
   }, [genreId, category]);
 
   useEffect(() => {
+    let cancelled = false;
+
     if (hasMore) {
       const loadItems = async () => {
         if (isLoadingRef.current) return;
@@ -59,9 +66,9 @@ export default function RecommendationAlbums({ category, genre, onBack }) {
         // 캐시 확인 → hit이면 이전 데이터에 추가만 하면 됨
         const cached = getCache(cacheKey, GENRE_ITEMS_TTL);
         if (cached) {
-          if (genreRef.current !== requestedGenre) {
+          if (genreRef.current !== requestedGenre || cancelled) {
             isLoadingRef.current = false;
-            setIsLoading(false);
+            if (!cancelled) setIsLoading(false);
             return;
           }
           setItems(prev => [...prev, ...cached]);
@@ -81,10 +88,12 @@ export default function RecommendationAlbums({ category, genre, onBack }) {
           data = await fetchMoviesByGenre(genreId, page, 10);
         }
 
-        if (genreRef.current !== requestedGenre) {
-          console.log('[STALE RESPONSE] Genre changed during fetch, disalbuming results');
+        if (genreRef.current !== requestedGenre || cancelled) {
+          if (genreRef.current !== requestedGenre) {
+            console.log('[STALE RESPONSE] Genre changed during fetch, disalbuming results');
+          }
           isLoadingRef.current = false;
-          setIsLoading(false);
+          if (!cancelled) setIsLoading(false);
           return;
         }
 
@@ -153,12 +162,14 @@ export default function RecommendationAlbums({ category, genre, onBack }) {
       };
       loadItems();
     }
+
+    return () => { cancelled = true; };
   }, [category, genreId, page]); 
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && !isLoadingRef.current && hasMore) {
+        if (entries[0].isIntersecting && !isLoadingRef.current && hasMoreRef.current) {
           setPage(prev => prev + 1);
         }
       },
@@ -170,9 +181,11 @@ export default function RecommendationAlbums({ category, genre, onBack }) {
     }
 
     return () => {
-      if (observerTarget.current) observer.unobserve(observerTarget.current);
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
     };
-  }, [observerTarget, isLoading, hasMore]);
+  }, []);
 
   const handlePlayClick = (e, item) => {
     e.stopPropagation();

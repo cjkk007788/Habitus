@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { createItem, createAlbum, linkItemsToAlbum, updateItem, updateAlbum, syncItemsToAlbum } from '../../api/archiveApi';
+import { createItem, createAlbum, linkItemsToAlbum, updateItem, updateAlbum, syncItemsToAlbum, deleteItemAPI, deleteAlbumAPI, deleteMixAPI } from '../../api/archiveApi';
 
 // 카드 내부 아이템들의 타입을 분석하여 최종 카드의 카테고리를 결정하는 유틸 함수
 const calculateAlbumCategory = (itemTypes) => {
@@ -27,15 +27,18 @@ export const createAlbumItemSlice = (set, get) => ({
       const payload = {
         title: itemData.title || itemData.name || 'Untitled Item',
         item_type: itemData.itemType || itemData.category || 'music',
-        external_id: itemData.apiMeta?.rawId || itemData.mbid || String(itemData.id || ''),
-        external_source: itemData.apiMeta?.provider || '',
+        external_id: itemData.apiMeta?.rawId || itemData.mbid || itemData.external_id || itemData.externalId || String(itemData.id || ''),
+        external_source: itemData.external_source || itemData.externalSource || itemData.apiMeta?.provider || '',
         rating: Number(itemData.rating) || 0,
         impression: itemData.impression || itemData.review || '',
         description: itemData.review || '',
         cover_image_url: Array.isArray(itemData.coverImages) && itemData.coverImages.length > 0
           ? itemData.coverImages[0]
           : (itemData.coverImageUrl || itemData.coverImage || itemData.image_url || ''),
-        genres: itemData.userMeta?.genreTags || [],
+        genres: [
+          ...(Array.isArray(itemData.genres) ? itemData.genres : []),
+          ...(Array.isArray(itemData.userMeta?.genreTags) ? itemData.userMeta.genreTags : []),
+        ].filter(Boolean),
         media_meta: {
           ...itemData.mediaMeta,
           artists: Array.isArray(itemData.artists) ? itemData.artists : (typeof itemData.artists === 'string' ? [itemData.artists] : []),
@@ -105,8 +108,8 @@ export const createAlbumItemSlice = (set, get) => ({
           const payload = {
             title: item.title || item.name || 'Untitled Item',
             item_type: item.itemType || item.category || 'music', // 카드의 껍데기 카테고리가 아닌 본연의 타입 보존
-            external_id: externalId,
-            external_source: item.apiMeta?.provider || '',
+            external_id: item.apiMeta?.rawId || item.mbid || item.external_id || item.externalId || String(item.id || ''),
+            external_source: item.external_source || item.externalSource || item.apiMeta?.provider || '',
             rating: Number(item.rating) || 0,
             impression: item.impression || item.review || '',
             description: item.review || '',
@@ -199,183 +202,299 @@ export const createAlbumItemSlice = (set, get) => ({
   },
 
   // 편집 중인 카드 전체 업데이트 로직 (기존 아이템은 수정, 새 아이템은 생성)
-  updateAlbumWithStagedItems: (albumId, albumTitle, stagedItemsArray) => {
-    const timestamp = new Date().toISOString();
-    set((state) => {
-      let newItems = [...state.items];
-      let updatedItemIds = [];
+  updateAlbumWithStagedItems: async (albumId, albumTitle, stagedItemsArray) => {
+    try {
+      const timestamp = new Date().toISOString();
+      const localItemsToInsert = [];
+      const updatedItemIds = [];
+      const backendTypes = [];
 
-      stagedItemsArray.forEach(st => {
-        const d = st.itemData;
-        const coverImages = Array.isArray(d.coverImages) && d.coverImages.length > 0 ? d.coverImages : (d.image_url ? [d.image_url] : []);
-
-        const existingItemIndex = newItems.findIndex(i => i.id === d.id);
+      // 1. 개별 아이템 처리 (생성 또는 수정)
+      for (const st of stagedItemsArray) {
+        const item = st.itemData;
+        const externalId = item.apiMeta?.rawId || item.mbid || String(item.id || '');
         
-        if (existingItemIndex !== -1) {
-          // 1. 기존에 스토어에 존재하는 아이템인 경우 (업데이트)
-          newItems[existingItemIndex] = {
-            ...newItems[existingItemIndex],
-            coverImages,
-            rating: st.formState.rating,
-            impression: st.formState.review,
-            userMeta: { ...(newItems[existingItemIndex].userMeta || {}), tags: st.formState.tags },
-            isPublic: st.formState.isPublic
-          };
-          updatedItemIds.push(d.id);
-        } else {
-          // 2. 스테이징 과정에서 새로 추가된 아이템인 경우 (신규 생성)
-          const newItemId = uuidv4();
-          newItems.push({
-            ...d, // 모든 메타데이터 보존
-            id: newItemId,
-            isTemp: true, // 아직 백엔드에 저장되지 않은 임시 아이템임을 표시
-            itemType: d.itemType || d.category || 'music', // 본연의 타입 보존
-            title: d.title || 'Untitled Item',
-            coverImages,
-            artists: Array.isArray(d.artists) ? d.artists : (typeof d.artists === 'string' ? [d.artists] : []),
+        const existingItem = get().items.find(i => i.id === item.id);
+        
+        if (existingItem) {
+          // 1-A. 기존에 스토어에 존재하는 아이템인 경우 (업데이트)
+          const updatePayload = {
             rating: Number(st.formState.rating) || 0,
-            status: 'want',
             impression: st.formState.review || '',
-            date: timestamp,
-            isDeleted: false,
-            userMeta: { tags: st.formState.tags || [], genreTags: [], mood: '', context: [] },
-            isPublic: st.formState.isPublic
+            user_meta: { ...(existingItem.userMeta || {}), tags: st.formState.tags || [] },
+            is_public: st.formState.isPublic || false
+          };
+          
+          await updateItem(existingItem.id, updatePayload);
+          
+          updatedItemIds.push(existingItem.id);
+          backendTypes.push(existingItem.itemType || existingItem.item_type || 'music');
+          
+          localItemsToInsert.push({
+            ...existingItem,
+            rating: updatePayload.rating,
+            impression: updatePayload.impression,
+            userMeta: updatePayload.user_meta,
+            isPublic: updatePayload.is_public,
+            coverImages: Array.isArray(item.coverImages) && item.coverImages.length > 0 ? item.coverImages : (item.image_url ? [item.image_url] : existingItem.coverImages),
           });
-          updatedItemIds.push(newItemId);
+        } else {
+          // 1-B. 스테이징 과정에서 새로 추가된 아이템인 경우 (신규 생성)
+          const payload = {
+            title: item.title || item.name || 'Untitled Item',
+            item_type: item.itemType || item.category || 'music',
+            external_id: item.apiMeta?.rawId || item.mbid || item.external_id || item.externalId || String(item.id || ''),
+            external_source: item.external_source || item.externalSource || item.apiMeta?.provider || '',
+            rating: Number(st.formState.rating) || 0,
+            impression: st.formState.review || '',
+            description: st.formState.review || '',
+            cover_image_url: Array.isArray(item.coverImages) && item.coverImages.length > 0
+              ? item.coverImages[0]
+              : (item.coverImageUrl || item.coverImage || item.image_url || ''),
+            genres: item.userMeta?.genreTags || [],
+            media_meta: {
+              ...item.mediaMeta,
+              artists: Array.isArray(item.artists) ? item.artists : (typeof item.artists === 'string' ? [item.artists] : []),
+              rawFrontendData: item
+            },
+            user_meta: {
+              tags: Array.isArray(st.formState.tags) ? st.formState.tags : [],
+              mood: item.mood || item.userMeta?.mood || '',
+              context: item.userMeta?.context || []
+            },
+            links: []
+          };
+
+          const createdItem = await createItem(payload);
+          updatedItemIds.push(createdItem.id);
+          backendTypes.push(createdItem.item_type);
+
+          localItemsToInsert.push({
+            ...item,
+            id: createdItem.id,
+            itemType: createdItem.item_type,
+            title: createdItem.title,
+            coverImages: [createdItem.cover_image_url],
+            rating: createdItem.rating,
+            impression: createdItem.impression,
+            isPublic: createdItem.is_public,
+            date: createdItem.created_at || timestamp,
+          });
         }
+      }
+
+      // 2. 카드의 정보(타이틀 및 카테고리) 백엔드 갱신
+      const finalCategory = calculateAlbumCategory(backendTypes);
+      const albumPayload = {
+        title: albumTitle || 'Untitled Album',
+        category: finalCategory
+      };
+      await updateAlbum(albumId, albumPayload);
+
+      // 3. 카드에 포함된 아이템 목록 백엔드 동기화 (순서/삭제 포함)
+      await syncItemsToAlbum(albumId, updatedItemIds);
+
+      // 4. 로컬 스토어 갱신
+      set((state) => {
+        let newItems = [...state.items];
+        
+        localItemsToInsert.forEach(localItem => {
+          const idx = newItems.findIndex(i => i.id === localItem.id);
+          if (idx !== -1) {
+            newItems[idx] = localItem;
+          } else {
+            newItems.push(localItem);
+          }
+        });
+
+        const newAlbums = state.albums.map(c => c.id === albumId ? {
+          ...c,
+          albumTitle: albumTitle,
+          category: finalCategory,
+          itemIds: updatedItemIds,
+          updatedAt: timestamp
+        } : c);
+
+        return { items: newItems, albums: newAlbums };
       });
-
-      // 3. 카드의 정보를 새로운 itemIds 리스트와 타이틀로 갱신
-      const updatedItemTypes = updatedItemIds.map(id => {
-        const item = newItems.find(i => i.id === id);
-        return item ? item.itemType : 'music';
-      });
-      const finalCategory = calculateAlbumCategory(updatedItemTypes);
-
-      const newAlbums = state.albums.map(c => c.id === albumId ? {
-        ...c,
-        albumTitle: albumTitle,
-        category: finalCategory,
-        itemIds: updatedItemIds,
-        updatedAt: timestamp
-      } : c);
-
-      return { items: newItems, albums: newAlbums };
-    });
+      
+    } catch (error) {
+      console.error("Failed to update album with staged items:", error);
+      throw error;
+    }
   },
 
   // 기존 카드에 새로운 아이템 단일 추가
-  addItemToAlbum: (albumId, item) => {
-    set((state) => {
-      const targetAlbum = state.albums.find(c => c.id === albumId);
-      if (!targetAlbum) return state; // 카드가 존재하지 않으면 무시
+  addItemToAlbum: async (albumId, item) => {
+    try {
+      const targetAlbum = get().albums.find(c => c.id === albumId);
+      if (!targetAlbum) return; // 카드가 존재하지 않으면 무시
 
       const timestamp = new Date().toISOString();
-      const itemId = uuidv4();
+      const externalId = item.apiMeta?.rawId || item.mbid || String(item.id || '');
 
-      // 데이터 정규화 및 객체 생성
-      const newItem = {
-        id: itemId,
-        isTemp: true, // 로컬 임시 데이터 표시
-        itemType: item.itemType || item.category || 'music',
-        title: item.title || 'Untitled Item',
-        coverImages: Array.isArray(item.coverImages) ? item.coverImages : (item.coverImageUrl ? [item.coverImageUrl] : (item.coverImage ? [item.coverImage] : [])),
-        artists: Array.isArray(item.artists) ? item.artists : (typeof item.artists === 'string' ? [item.artists] : []),
+      const payload = {
+        title: item.title || item.name || 'Untitled Item',
+        item_type: item.itemType || item.category || 'music',
+        external_id: item.apiMeta?.rawId || item.mbid || item.external_id || item.externalId || String(item.id || ''),
+        external_source: item.external_source || item.externalSource || item.apiMeta?.provider || '',
         rating: Number(item.rating) || 0,
-        status: item.status || 'want',
         impression: item.impression || '',
-        date: timestamp,
-        isDeleted: false,
-        userMeta: {
+        description: item.impression || '',
+        cover_image_url: Array.isArray(item.coverImages) && item.coverImages.length > 0
+          ? item.coverImages[0]
+          : (item.coverImageUrl || item.coverImage || item.image_url || ''),
+        genres: item.userMeta?.genreTags || [],
+        media_meta: {
+          ...item.mediaMeta,
+          artists: Array.isArray(item.artists) ? item.artists : (typeof item.artists === 'string' ? [item.artists] : []),
+          rawFrontendData: item
+        },
+        user_meta: {
           tags: Array.isArray(item.tags) ? item.tags : (item.userMeta?.tags || []),
-          genreTags: item.userMeta?.genreTags || [],
           mood: item.mood || item.userMeta?.mood || '',
           context: item.userMeta?.context || []
         },
-        mediaMeta: {
-          originalOrder: item.mediaMeta?.originalOrder || null,
-          releaseYear: item.releaseYear ? Number(item.releaseYear) : (item.mediaMeta?.releaseYear || null),
-          duration: item.mediaMeta?.duration || '',
-          language: item.mediaMeta?.language || '',
-          contributors: item.mediaMeta?.contributors || [],
-          genre: item.mediaMeta?.genre || ''
-        },
-        linkMeta: {
-          urls: item.url ? [item.url] : (item.linkMeta?.urls || [])
-        },
-        apiMeta: item.apiMeta || {
-          provider: '',
-          rawId: '',
-          metrics: {}
-        }
+        links: []
       };
 
-      return {
-        items: [...state.items, newItem],
-        albums: state.albums.map(album => {
-          if (album.id === albumId) {
-            const updatedItemIds = [...album.itemIds, itemId];
-            const updatedItemTypes = updatedItemIds.map(id => {
-              if (id === itemId) return newItem.itemType;
-              const existingItem = state.items.find(i => i.id === id);
-              return existingItem ? existingItem.itemType : 'music';
-            });
-            return {
-              ...album,
-              category: calculateAlbumCategory(updatedItemTypes),
-              itemIds: updatedItemIds,
-              updatedAt: timestamp
-            };
-          }
-          return album;
-        })
+      const createdItem = await createItem(payload);
+      
+      const newItem = {
+        ...item,
+        id: createdItem.id,
+        itemType: createdItem.item_type,
+        title: createdItem.title,
+        coverImages: [createdItem.cover_image_url],
+        rating: createdItem.rating,
+        impression: createdItem.impression,
+        isPublic: createdItem.is_public,
+        date: createdItem.created_at || timestamp,
       };
-    });
+
+      await linkItemsToAlbum(albumId, [createdItem.id]);
+
+      const updatedItemIds = [...targetAlbum.itemIds, createdItem.id];
+      const updatedItemTypes = updatedItemIds.map(id => {
+        if (id === createdItem.id) return newItem.itemType;
+        const existingItem = get().items.find(i => i.id === id);
+        return existingItem ? existingItem.itemType : 'music';
+      });
+      const finalCategory = calculateAlbumCategory(updatedItemTypes);
+
+      await updateAlbum(albumId, { category: finalCategory });
+
+      set((state) => {
+        return {
+          items: [...state.items, newItem],
+          albums: state.albums.map(album => {
+            if (album.id === albumId) {
+              return {
+                ...album,
+                category: finalCategory,
+                itemIds: updatedItemIds,
+                updatedAt: timestamp
+              };
+            }
+            return album;
+          })
+        };
+      });
+    } catch (error) {
+      console.error("Failed to add item to album:", error);
+      throw error;
+    }
   },
 
   // Album 삭제 (Hard Delete: 카드와 연관된 아이템 일괄 삭제)
-  removeAlbum: (albumId) => {
-    set((state) => {
-      const albumToDelete = state.albums.find(album => album.id === albumId);
-      if (!albumToDelete) return state;
+  removeAlbum: async (albumId) => {
+    try {
+      await deleteAlbumAPI(albumId);
+      set((state) => {
+        const albumToDelete = state.albums.find(album => album.id === albumId);
+        if (!albumToDelete) return state;
 
-      const itemIdsToDelete = new Set(albumToDelete.itemIds || []);
+        const itemIdsToDelete = new Set(albumToDelete.itemIds || []);
 
-      return {
-        albums: state.albums.filter(album => album.id !== albumId),
-        items: state.items.filter(item => !itemIdsToDelete.has(item.id))
-      };
-    });
+        return {
+          albums: state.albums.filter(album => album.id !== albumId),
+          items: state.items.filter(item => !itemIdsToDelete.has(item.id))
+        };
+      });
+    } catch (error) {
+      console.error("Failed to delete album API:", error);
+    }
   },
 
   // 개별 Item 삭제 (Hard Delete: 아이템 삭제 및 부모 카드의 명단에서도 제거)
-  removeItem: (itemId) => {
-    set((state) => {
-      const newItems = state.items.filter(item => item.id !== itemId);
-      const newAlbums = state.albums.map(album => ({
-        ...album,
-        itemIds: album.itemIds.filter(id => id !== itemId)
-      }));
+  removeItem: async (itemId) => {
+    try {
+      await deleteItemAPI(itemId);
+      set((state) => {
+        const newItems = state.items.filter(item => item.id !== itemId);
+        const newAlbums = state.albums.map(album => ({
+          ...album,
+          itemIds: album.itemIds.filter(id => id !== itemId)
+        }));
 
-      return { items: newItems, albums: newAlbums };
-    });
+        return { items: newItems, albums: newAlbums };
+      });
+    } catch (error) {
+      console.error("Failed to delete item API:", error);
+    }
   },
 
   // Album 데이터 수정
-  updateAlbum: (albumId, updatedData) => {
-    set((state) => ({
-      albums: state.albums.map(album =>
-        album.id === albumId ? { ...album, ...updatedData, updatedAt: new Date().toISOString() } : album
-      )
-    }));
+  updateAlbum: async (albumId, updatedData) => {
+    try {
+      // 1. Backend API 호출 (이름 충돌 방지를 위해 archiveApi.js에서 가져온 updateAlbum 함수는 상단에서 apiUpdateAlbum 등으로 alias 하는 것이 좋으나,
+      //    여기서는 화살표 함수 내부이므로 상위 스코프의 updateAlbum(API)를 호출하게 됩니다.
+      //    명확성을 위해 API 호출은 생략하고 상위 함수에서 직접 호출하는 패턴을 쓰거나 alias를 쓸 수 있습니다.
+      //    안전을 위해 fetch를 직접 쓰거나 상단의 import를 사용합니다.)
+      //    위 코드들에서 이미 import한 updateAlbum을 씁니다.
+      await updateAlbum(albumId, updatedData);
+      
+      // 2. 로컬 스토어 갱신
+      set((state) => ({
+        albums: state.albums.map(album =>
+          album.id === albumId ? { ...album, ...updatedData, updatedAt: new Date().toISOString() } : album
+        )
+      }));
+    } catch (error) {
+      console.error("Failed to update album:", error);
+      throw error;
+    }
   },
 
   // Item 데이터 수정
-  updateItem: (itemId, updatedData) => {
-    set((state) => ({
-      items: state.items.map(item =>
-        item.id === itemId ? { ...item, ...updatedData } : item
-      )
-    }));
+  updateItem: async (itemId, updatedData) => {
+    try {
+      // 1. Backend API 호출
+      // 서버에서 기대하는 스키마(rating, impression, user_meta, is_public 등)에 맞게 맵핑
+      const apiPayload = {
+        rating: updatedData.rating !== undefined ? Number(updatedData.rating) : undefined,
+        impression: updatedData.impression !== undefined ? updatedData.impression : undefined,
+        is_public: updatedData.isPublic !== undefined ? updatedData.isPublic : undefined,
+      };
+      
+      if (updatedData.userMeta) {
+        apiPayload.user_meta = updatedData.userMeta;
+      }
+      
+      // undefined 값 제거
+      Object.keys(apiPayload).forEach(key => apiPayload[key] === undefined && delete apiPayload[key]);
+      
+      await updateItem(itemId, apiPayload);
+
+      // 2. 로컬 스토어 갱신
+      set((state) => ({
+        items: state.items.map(item =>
+          item.id === itemId ? { ...item, ...updatedData } : item
+        )
+      }));
+    } catch (error) {
+      console.error("Failed to update item:", error);
+      throw error;
+    }
   },
 });

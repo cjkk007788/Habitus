@@ -20,6 +20,31 @@ export function toMediaAlbumItem(item) {
   // ── 책: Google Books volume ID (문자열) ───────────────────
   const bookId = item.external_source === 'google_books' ? item.external_id : null;
 
+  // TMDB genre mapping
+  const TMDB_GENRE_MAP = {
+    28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy',
+    80: 'Crime', 99: 'Documentary', 18: 'Drama', 10751: 'Family',
+    14: 'Fantasy', 36: 'History', 27: 'Horror', 10402: 'Music',
+    9648: 'Mystery', 10749: 'Romance', 878: 'Science Fiction',
+    10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
+  };
+
+  // ── 장르 수집 (소스별 차이 처리) ─────────────────────────
+  const genreList = [];
+
+  if (Array.isArray(meta.tags)) genreList.push(...meta.tags);
+  if (Array.isArray(meta.genres)) genreList.push(...meta.genres);
+  if (Array.isArray(meta.genre_tags)) genreList.push(...meta.genre_tags);
+  if (Array.isArray(meta.categories)) genreList.push(...meta.categories);
+  
+  if (Array.isArray(meta.genre_ids)) {
+    meta.genre_ids.forEach(id => {
+      if (TMDB_GENRE_MAP[id]) genreList.push(TMDB_GENRE_MAP[id]);
+    });
+  }
+
+  const genres = [...new Set(genreList.filter(Boolean))];
+
   return {
     // ── MediaAlbum 공통 ─────────────────────────────────────
     id: movieId ?? bookId ?? item.external_id,
@@ -30,6 +55,18 @@ export function toMediaAlbumItem(item) {
     coverImages: item.cover_image_url ? [item.cover_image_url] : [],
     bgColor: '#1e3a5f',
     previewUrl: item.preview_url || meta.preview_link || null,
+
+    // ── 장르 (리포트 집계용) ─────────────────────────────────
+    genres,
+    userMeta: {
+      genreTags: genres,
+    },
+
+    // ── 아티스트 (리포트 집계용) ───────────────────────────────
+    artists: [
+      ...(meta.artist && typeof meta.artist === 'string' ? [meta.artist] : []),
+      ...(Array.isArray(meta.authors) ? meta.authors : [])
+    ].filter(Boolean),
 
     // ── mediaMeta: 각 Details 컴포넌트가 사용하는 필드 ──────
     mediaMeta: {

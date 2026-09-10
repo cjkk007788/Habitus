@@ -1,6 +1,6 @@
 import React from 'react';
-import useSidebarStore from '../../../store/sidebar/useSidebarStore';
-import { useArchiveStore } from '../../../store/archive';
+import useSidebarStore from '../../../../store/sidebar/useSidebarStore';
+import { useArchiveStore } from '../../../../store/archive';
 
 export default function RightSidebarFooter({
   viewingStagedIndex,
@@ -128,26 +128,36 @@ export default function RightSidebarFooter({
             // 1. 기존 카드를 편집(Update) 중인 경우
             if (editingAlbumId) {
               console.log("[RightSidebarFooter] Case 1: editingAlbumId");
-              updateAlbumWithStagedItems(editingAlbumId, stagedAlbumTitle, stagedItems);
-              clearStagedItems();
-              alert('Saved to Archive!');
-              closeRightSidebar();
+              try {
+                await updateAlbumWithStagedItems(editingAlbumId, stagedAlbumTitle, stagedItems);
+                clearStagedItems();
+                alert('Saved to Archive!');
+                closeRightSidebar();
+              } catch (err) {
+                console.error("[RightSidebarFooter] Error calling updateAlbumWithStagedItems:", err);
+                alert(`저장에 실패했습니다: ${err?.message || err}`);
+              }
               return;
             }
 
             // 2. 스테이징된 항목은 없고, 기존 단일 아이템을 띄워놓고 바로 수정한 경우
             if (stagedItems.length === 0 && activeSidebarItem && activeSidebarItem._viewType === 'item') {
               console.log("[RightSidebarFooter] Case 2: update single item");
-              updateItem(activeSidebarItem.id, {
-                rating: draftForm.rating,
-                impression: draftForm.review,
-                userMeta: {
-                  ...(activeSidebarItem.userMeta || {}),
-                  tags: draftForm.tags
-                },
-                isPublic: draftForm.isPublic
-              });
-              alert('Saved to Archive!');
+              try {
+                await updateItem(activeSidebarItem.id, {
+                  rating: draftForm.rating,
+                  impression: draftForm.review,
+                  userMeta: {
+                    ...(activeSidebarItem.userMeta || {}),
+                    tags: draftForm.tags
+                  },
+                  isPublic: draftForm.isPublic
+                });
+                alert('Saved to Archive!');
+              } catch (err) {
+                console.error("[RightSidebarFooter] Error calling updateItem:", err);
+                alert(`저장에 실패했습니다: ${err?.message || err}`);
+              }
               closeRightSidebar();
               return;
             }

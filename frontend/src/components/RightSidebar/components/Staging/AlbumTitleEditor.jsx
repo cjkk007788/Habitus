@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import AnimatedText from '../../common/AnimatedText/AnimatedText';
+import AnimatedText from "../../../common/AnimatedText/AnimatedText";
 
 export default function AlbumTitleEditor({ value, onChange }) {
   const [isEditing, setIsEditing] = useState(false);

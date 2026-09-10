@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { useArchiveStore } from '../../../store/archive';
+import { useArchiveStore } from '../../../../store/archive';
 
 export default function StagedItemsList({ viewingStagedIndex, setViewingStagedIndex }) {
   const { stagedItems, removeStagedItem } = useArchiveStore();

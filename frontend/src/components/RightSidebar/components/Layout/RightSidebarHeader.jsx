@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Share } from 'lucide-react';
-import useSidebarStore from '../../../store/sidebar/useSidebarStore';
+import useSidebarStore from '../../../../store/sidebar/useSidebarStore';
 
 export default function RightSidebarHeader() {
   const closeRightSidebar = useSidebarStore(state => state.closeRightSidebar);

@@ -31,8 +31,15 @@ async def get_taste_analysis(
         except ValueError:
             raise HTTPException(status_code=400, detail="유효하지 않은 유저 ID 포맷입니다.")
     
-    # 2. 아이템 조회 (모든 아이템)
-    items = db.query(Item).filter(Item.user_id == uid).all()
+    # 2. 아이템 조회 (모든 아이템) -> ORM 객체 전체 대신 필요한 컬럼만 추출하여 메모리 최적화
+    items = db.query(
+        Item.id,
+        Item.media_meta,
+        Item.user_meta,
+        Item.item_type,
+        Item.title,
+        Item.genres
+    ).filter(Item.user_id == uid).all()
     
     if not items:
         return {
@@ -40,48 +47,132 @@ async def get_taste_analysis(
             "topGenres": []
         }
         
-    artist_counter = Counter()
-    genre_counter = Counter()
+    artist_stats = {}
+    genre_stats = {}
+    
+    def add_artist(name, item_type, item_id):
+        if not name: return
+        if name not in artist_stats:
+            artist_stats[name] = {"count": 0, "types": Counter(), "items": []}
+        artist_stats[name]["count"] += 1
+        artist_stats[name]["types"][item_type] += 1
+        artist_stats[name]["items"].append(str(item_id))
+
+    def add_genre(name, item_type, item_id):
+        if not name: return
+        if name not in genre_stats:
+            genre_stats[name] = {"count": 0, "types": Counter(), "items": []}
+        genre_stats[name]["count"] += 1
+        genre_stats[name]["types"][item_type] += 1
+        genre_stats[name]["items"].append(str(item_id))
     
     for item in items:
         # Tally Artists
-        # media_meta가 list인 경우 처리(오류 방지)
         media_meta = item.media_meta if isinstance(item.media_meta, dict) else {}
         user_meta = item.user_meta if isinstance(item.user_meta, dict) else {}
+        raw = media_meta.get("rawFrontendData", {}) if isinstance(media_meta.get("rawFrontendData"), dict) else {}
         
+        # 수집된 아티스트명 중복 방지용 Set
+        found_artists = set()
+
+        # 1) contributors 배열에서 집계 (role이 없어도 name이 있으면 카운팅)
         contributors = media_meta.get("contributors", [])
         if isinstance(contributors, list) and contributors:
             for c in contributors:
                 role = str(c.get("role", "")).lower()
-                name = c.get("name", "")
-                if name and (role == "artist" or role == "director" or role == "author"):
-                    artist_counter[name] += 1
-        elif item.item_type == "music" and getattr(item, "subtitle", None):
-            # contributors 배열이 없고 music 타입이면 subtitle(보통 아티스트명)을 사용
-            artist_counter[item.subtitle] += 1
+                name = str(c.get("name", "")).strip()
+                if name:
+                    # 프론트엔드 어댑터에서 subtitle을 무조건 contributors[{name}]에 넣는 동작으로 인해
+                    # 국가코드(KR), 긴 설명문(overview) 등이 아티스트로 잘못 집계되는 현상 방지
+                    if not role:
+                        if len(name) > 40 or "..." in name or " · " in name or name in ("KR", "US", "UK", "JP", "Group", "Person"):
+                            continue
+                        if item.item_type in ("music_artist", "movie_person"):
+                            continue
+                            
+                    if not role or role in ("artist", "director", "author", "composer", "performer", "actor"):
+                        found_artists.add(name)
+
+        # 2) media_meta.artists 배열에서 집계
+        artists_list = media_meta.get("artists", [])
+        if isinstance(artists_list, list):
+            for a in artists_list:
+                if isinstance(a, str) and a:
+                    found_artists.add(a)
+                elif isinstance(a, dict) and a.get("name"):
+                    found_artists.add(a["name"])
+
+        # 3) rawFrontendData.artists에서 집계
+        raw_artists = raw.get("artists", [])
+        if isinstance(raw_artists, list):
+            for a in raw_artists:
+                if isinstance(a, str) and a:
+                    found_artists.add(a)
+
+        # 4) contributors가 없고 music 타입이면 subtitle 사용
+        if not contributors and item.item_type == "music" and getattr(item, "subtitle", None):
+            found_artists.add(item.subtitle)
+            
+        # 5) movie_person 타입이면 아이템 자체가 아티스트임
+        if item.item_type == "movie_person" and item.title:
+            found_artists.add(item.title)
+            
+        # 6) music_artist 타입이면 아이템 자체가 아티스트임
+        if item.item_type == "music_artist" and item.title:
+            found_artists.add(item.title)
+            
+        # 중복 제거된 아티스트들을 한 번씩만 카운트
+        for artist_name in found_artists:
+            add_artist(artist_name, item.item_type, item.id)
+
             
         # Tally Genres
-        genre_val = media_meta.get("genre")
-        if genre_val:
-            genre_counter[genre_val] += 1
-            
-        genres_val = media_meta.get("genres", [])
-        if isinstance(genres_val, list):
-            for g in genres_val:
-                genre_counter[g] += 1
-            
-        genre_tags = user_meta.get("genreTags", [])
-        if isinstance(genre_tags, list):
-            for g in genre_tags:
-                genre_counter[g] += 1
+        if item.item_type in ["music", "movie", "book"]:
+            genre_val = media_meta.get("genre")
+            if genre_val and isinstance(genre_val, str):
+                add_genre(genre_val, item.item_type, item.id)
                 
-        # item.genres
-        item_genres = item.genres if isinstance(item.genres, list) else []
-        for g in item_genres:
-            genre_counter[g] += 1
+            genres_val = media_meta.get("genres", [])
+            if isinstance(genres_val, list):
+                for g in genres_val:
+                    if g:
+                        add_genre(str(g), item.item_type, item.id)
+                
+            genre_tags = user_meta.get("genreTags", []) or user_meta.get("genre_tags", [])
+            if isinstance(genre_tags, list):
+                for g in genre_tags:
+                    if g:
+                        add_genre(str(g), item.item_type, item.id)
             
-    top_artists = artist_counter.most_common(5)
-    top_genres = genre_counter.most_common(5)
+            # DB 컬럼 genres 에서도 집계 추가
+            item_genres = getattr(item, "genres", [])
+            item_genres = item_genres if isinstance(item_genres, list) else []
+            for g in item_genres:
+                if g:
+                    add_genre(str(g), item.item_type, item.id)
+                        
+    # Sort and Format
+    sorted_artists = sorted(artist_stats.items(), key=lambda x: x[1]["count"], reverse=True)
+    top_artists = [
+        {
+            "name": name, 
+            "count": stats["count"], 
+            "type": stats["types"].most_common(1)[0][0] if stats["types"] else "unknown",
+            "items": list(set(stats["items"]))
+        }
+        for name, stats in sorted_artists[:20]
+    ]
+    
+    sorted_genres = sorted(genre_stats.items(), key=lambda x: x[1]["count"], reverse=True)
+    top_genres = [
+        {
+            "name": name, 
+            "count": stats["count"], 
+            "type": stats["types"].most_common(1)[0][0] if stats["types"] else "unknown",
+            "items": list(set(stats["items"]))
+        }
+        for name, stats in sorted_genres[:20]
+    ]
     
     return {
         "topArtists": top_artists,
