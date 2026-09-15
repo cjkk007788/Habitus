@@ -7,6 +7,7 @@ import Archive from './pages/Archive/Archive';
 import ArchiveContent from './pages/Archive/Content/ArchiveContent';
 import ArchiveReport from './pages/Archive/Report/ArchiveReport';
 import ArchiveCustom from './pages/Archive/Custom/ArchiveCustom';
+import CustomCreatePage from './pages/Archive/Custom/CustomCreatePage';
 import Social from './pages/Social';
 
 /*
@@ -42,6 +43,7 @@ function App() {
           <Route path="report" element={<ArchiveReport />} />
           <Route path="custom" element={<ArchiveCustom />} />
         </Route>
+        <Route path="/archive/custom/create" element={<CustomCreatePage />} />
         <Route path="/social" element={<Social />} />
       </Route>
     </Routes>

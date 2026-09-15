@@ -1,0 +1,37 @@
+.masonry-grid {
+  column-count: 4;
+  column-gap: 18px;
+  padding: 0;
+}
+
+.masonry-grid__item {
+  break-inside: avoid;
+  margin-bottom: 18px;
+  /* 부드러운 등장 애니메이션 */
+  animation: masonryFadeIn 0.4s ease both;
+}
+
+@keyframes masonryFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 반응형 컬럼 수 */
+@media (max-width: 1600px) {
+  .masonry-grid { column-count: 4; }
+}
+@media (max-width: 1300px) {
+  .masonry-grid { column-count: 3; }
+}
+@media (max-width: 900px) {
+  .masonry-grid { column-count: 2; }
+}
+@media (max-width: 550px) {
+  .masonry-grid { column-count: 1; }
+}

@@ -50,26 +50,41 @@ async def get_taste_analysis(
     artist_stats = {}
     genre_stats = {}
     
+    #아티스트 집계 하는 시간 복잡도가 (O(N^2))일 거 같은데
+    #집계 로직이 들어가는 순간 META DATA로 하면 시간복잡도가 늘어남
+    #데이터 베이스그조로 바꾸면 데이터베이스를 완벽하게 정의해야한다.
+    
     def add_artist(name, item_type, item_id):
+        ##artist 이름을 집계하는 함수
+
         if not name: return
         if name not in artist_stats:
+            ##artist_stats = > 아티스트를 집계하는 바구니 없으면 추가하고 있으면
+            #개수를 더하고 types도 더하고 아이템도 추가한다
             artist_stats[name] = {"count": 0, "types": Counter(), "items": []}
         artist_stats[name]["count"] += 1
         artist_stats[name]["types"][item_type] += 1
         artist_stats[name]["items"].append(str(item_id))
+        #여기서는 id만 더해서 넣어준다.
+        #프론트가 따로 id를 체크해서 get함수를 사용
+    
 
     def add_genre(name, item_type, item_id):
         if not name: return
         if name not in genre_stats:
+            #NAME이라는 KEY로 데이터를 바로 찾아내기 때문에 add_genre는 item이 N개이면 O(N)복잡도
             genre_stats[name] = {"count": 0, "types": Counter(), "items": []}
         genre_stats[name]["count"] += 1
         genre_stats[name]["types"][item_type] += 1
         genre_stats[name]["items"].append(str(item_id))
     
+    #items는 해당 유저의 아카이브에 있는 모든 item 단위 항목들
     for item in items:
         # Tally Artists
+        
         media_meta = item.media_meta if isinstance(item.media_meta, dict) else {}
         user_meta = item.user_meta if isinstance(item.user_meta, dict) else {}
+        #raw는 프론트엔드에서 jason을 그대로 저장한 dictionanry
         raw = media_meta.get("rawFrontendData", {}) if isinstance(media_meta.get("rawFrontendData"), dict) else {}
         
         # 수집된 아티스트명 중복 방지용 Set
@@ -79,6 +94,7 @@ async def get_taste_analysis(
         contributors = media_meta.get("contributors", [])
         if isinstance(contributors, list) and contributors:
             for c in contributors:
+                #역할과 이름 정규화
                 role = str(c.get("role", "")).lower()
                 name = str(c.get("name", "")).strip()
                 if name:

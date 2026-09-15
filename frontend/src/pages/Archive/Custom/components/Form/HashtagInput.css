@@ -1,0 +1,53 @@
+.hashtag-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hashtag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hashtag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.hashtag-chip-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.hashtag-chip-remove:hover {
+  color: #ff4d4f;
+}
+
+.hashtag-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.hashtag-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+}

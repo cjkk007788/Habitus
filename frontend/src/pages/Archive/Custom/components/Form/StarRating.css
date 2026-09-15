@@ -1,0 +1,26 @@
+.star-rating-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+}
+
+.star-button:hover {
+  transform: scale(1.1);
+}
+
+.star-rating-text {
+  margin-left: 8px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}

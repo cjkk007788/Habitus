@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 import httpx
 import logging
@@ -20,6 +20,7 @@ def clear_all_user_data(
     current_user: User = Depends(get_current_user)
 ):
     """유저의 모든 아카이브 데이터(아이템, 앨범, 믹스)를 삭제합니다."""
+    
     user_mix_ids = db.query(Mix.id).filter(Mix.user_id == current_user.id)
     user_album_ids = db.query(Album.id).filter(Album.user_id == current_user.id)
 
@@ -120,6 +121,23 @@ def read_items(
 ):
     items = db.query(Item).filter(Item.user_id == current_user.id).offset(skip).limit(limit).all()
     return items
+
+@router.get("/custom/", response_model=List[ItemResponse])
+def read_custom_items(
+    item_type: Optional[str] = Query(None, description="카테고리 필터 (music, movie, book, custom 등)"),
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """커스텀(수동) 아카이빙 아이템만 조회. item_type으로 필터 가능."""
+    query = db.query(Item).filter(
+        Item.user_id == current_user.id,
+        Item.external_source == "custom"
+    )
+    if item_type:
+        query = query.filter(Item.item_type == item_type)
+    return query.order_by(Item.created_at.desc()).offset(skip).limit(limit).all()
 
 @router.get("/{item_id}", response_model=ItemResponse)
 def read_item(

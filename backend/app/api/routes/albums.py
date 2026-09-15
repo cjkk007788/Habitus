@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from app.api.dependencies import get_db, get_current_user
@@ -31,6 +31,23 @@ def read_albums(
     albums = db.query(Album).filter(Album.user_id == current_user.id).offset(skip).limit(limit).all()
     # Pydantic이 item_count를 0으로 기본 처리하겠지만, 실제 로직에서는 len(album.items) 등을 할당해줄 수 있습니다.
     return albums
+
+@router.get("/custom/", response_model=List[AlbumResponse])
+def read_custom_albums(
+    category: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """커스텀 카테고리의 앨범만 조회. category 파라미터로 추가 필터 가능."""
+    query = db.query(Album).filter(
+        Album.user_id == current_user.id,
+        Album.category.in_(["custom", "place", "food", "fashion", "moment", "quote"])
+    )
+    if category and category != "all":
+        query = query.filter(Album.category == category)
+    return query.order_by(Album.created_at.desc()).offset(skip).limit(limit).all()
 
 @router.get("/{album_id}", response_model=AlbumResponse)
 def read_album(
