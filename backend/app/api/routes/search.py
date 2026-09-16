@@ -31,7 +31,7 @@ async def _search_music(query: str, limit: int = 10) -> List[Dict[str, Any]]:
         return {
             "external_id": artist.get("id", ""),
             "external_source": "musicbrainz",
-            "item_type": "music_artist",
+            "item_type": "music",
             "title": artist.get("name", "Unknown Artist"),
             "subtitle": artist.get("type", "") + (" · " + artist.get("country", "") if artist.get("country") else ""),
             "cover_image_url": cover_url,
@@ -42,6 +42,7 @@ async def _search_music(query: str, limit: int = 10) -> List[Dict[str, Any]]:
                 "type": artist.get("type"),
                 "country": artist.get("country"),
                 "tags": [t["name"] for t in artist.get("tags", [])[:5]] if artist.get("tags") else [],
+                "role": "artist",  # 정규화: music_artist → music, role 보존
             },
         }
 

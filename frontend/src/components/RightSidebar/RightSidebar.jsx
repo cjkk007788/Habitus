@@ -13,6 +13,12 @@ export default function RightSidebar() {
     stagedItems,
     stagedAlbumTitle,
     setStagedAlbumTitle,
+    stagedAlbumCover,
+    setStagedAlbumCover,
+    stagedAlbumDescription,
+    setStagedAlbumDescription,
+    stagedAlbumLayout,
+    setStagedAlbumLayout,
     scrollRef,
     viewingStagedIndex,
     setViewingStagedIndex,
@@ -21,7 +27,6 @@ export default function RightSidebar() {
     item,
     isMusic,
     isMovie,
-    isMoviePerson,
     isBook,
     categoryLabel,
     year,
@@ -52,6 +57,12 @@ export default function RightSidebar() {
         stagedItems={stagedItems}
         stagedAlbumTitle={stagedAlbumTitle}
         setStagedAlbumTitle={setStagedAlbumTitle}
+        stagedAlbumCover={stagedAlbumCover}
+        setStagedAlbumCover={setStagedAlbumCover}
+        stagedAlbumDescription={stagedAlbumDescription}
+        setStagedAlbumDescription={setStagedAlbumDescription}
+        stagedAlbumLayout={stagedAlbumLayout}
+        setStagedAlbumLayout={setStagedAlbumLayout}
         scrollRef={scrollRef}
         viewingStagedIndex={viewingStagedIndex}
         setViewingStagedIndex={setViewingStagedIndex}
@@ -60,7 +71,6 @@ export default function RightSidebar() {
         item={item}
         isMusic={isMusic}
         isMovie={isMovie}
-        isMoviePerson={isMoviePerson}
         isBook={isBook}
         categoryLabel={categoryLabel}
         year={year}

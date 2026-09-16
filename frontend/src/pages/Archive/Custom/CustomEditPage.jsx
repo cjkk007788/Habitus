@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Settings, Trash2 } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Save, Plus, Settings, Trash2, Loader2 } from 'lucide-react';
 import { useCustomArchiveStore } from '../../../store/custom/useCustomArchiveStore';
 import CustomCarouselNav from './components/Display/CustomCarouselNav';
 import CustomImageCarousel from './components/Display/CustomImageCarousel';
@@ -18,33 +18,16 @@ const CATEGORY_OPTIONS = [
   { value: 'book', label: '📚 Book' },
 ];
 
-export default function CustomCreatePage() {
+export default function CustomEditPage() {
+  const { albumId } = useParams();
   const navigate = useNavigate();
-  const createCustomAlbum = useCustomArchiveStore(state => state.createCustomAlbum);
+  const { getAlbumById, updateCustomAlbum } = useCustomArchiveStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // 멀티 탭 에디터 상태
-  const [items, setItems] = useState([
-    {
-      id: Date.now(),
-      title: '',
-      category: 'music',
-      imageUrls: [],
-      rating: 0,
-      hashtags: [],
-      links: [],
-      impression: '',
-      description: '',
-      releaseYear: '',
-      artists: '',
-      director: '',
-      author: '',
-      relatedArtists: ''
-    }
-  ]);
-
+  const [items, setItems] = useState([]);
   const [currentUrlInput, setCurrentUrlInput] = useState('');
-
   const [albumMeta, setAlbumMeta] = useState({
     title: '',
     category: 'music',
@@ -53,8 +36,83 @@ export default function CustomCreatePage() {
     pinLayout: 'classic'
   });
 
-  const [activeTab, setActiveTab] = useState(0); // 숫자면 items 배열의 인덱스, 'album'이면 앨범 메타
+  const [activeTab, setActiveTab] = useState('album'); 
   const [activeImageIdx, setActiveImageIdx] = useState(0);
+
+  useEffect(() => {
+    async function fetchAlbumData() {
+      setIsLoading(true);
+      const data = await getAlbumById(albumId);
+      if (data) {
+        // Extract meta item
+        const hasMetaItem = data.items?.some(i => i.userMeta?.is_meta_item);
+        const metaItem = hasMetaItem ? data.items.find(i => i.userMeta?.is_meta_item) : {};
+        const otherItems = hasMetaItem ? data.items.filter(i => i.id !== metaItem.id) : (data.items || []);
+        
+        setAlbumMeta({
+          title: data.title || '',
+          category: (['music','movie','book'].includes(data.category) ? data.category : 'music'),
+          coverImageUrl: metaItem.coverImageUrl || '',
+          additionalImages: metaItem.mediaMeta?.images || [],
+          pinLayout: metaItem.userMeta?.pin_layout || 'classic'
+        });
+
+        if (otherItems.length > 0) {
+          setItems(otherItems.map(it => {
+            const meta = it.mediaMeta || {};
+            const artistsArr = Array.isArray(meta.artists) ? meta.artists : [];
+            const relatedArr = Array.isArray(meta.related_artists) ? meta.related_artists : [];
+            const contributors = Array.isArray(meta.contributors) ? meta.contributors : [];
+            
+            return {
+              id: it.id,
+              title: it.title || '',
+              category: (['music','movie','book'].includes(it.itemType) ? it.itemType : 'music'),
+              imageUrls: [it.coverImageUrl, ...(it.mediaMeta?.images || [])].filter(Boolean),
+              rating: it.rating || 0,
+              hashtags: it.genres || [],
+              links: it.links || [],
+              impression: it.impression || '',
+              description: it.description || '',
+              releaseYear: meta.releaseYear || '',
+              artists: artistsArr.join(', '),
+              director: contributors.find(c => c.role === 'director')?.name || '',
+              author: contributors.find(c => c.role === 'author')?.name || '',
+              relatedArtists: relatedArr.join(', ')
+            };
+          }));
+        } else {
+            // if only meta item, we still need at least 1 item to edit
+            const meta = metaItem.mediaMeta || {};
+            const artistsArr = Array.isArray(meta.artists) ? meta.artists : [];
+            const relatedArr = Array.isArray(meta.related_artists) ? meta.related_artists : [];
+            const contributors = Array.isArray(meta.contributors) ? meta.contributors : [];
+
+            setItems([{
+                id: Date.now(),
+                title: metaItem.title || '',
+                category: (['music','movie','book'].includes(metaItem.itemType) ? metaItem.itemType : 'music'),
+                imageUrls: [metaItem.coverImageUrl, ...(metaItem.mediaMeta?.images || [])].filter(Boolean),
+                rating: metaItem.rating || 0,
+                hashtags: metaItem.genres || [],
+                links: metaItem.links || [],
+                impression: metaItem.impression || '',
+                description: metaItem.description || '',
+                releaseYear: meta.releaseYear || '',
+                artists: artistsArr.join(', '),
+                director: contributors.find(c => c.role === 'director')?.name || '',
+                author: contributors.find(c => c.role === 'author')?.name || '',
+                relatedArtists: relatedArr.join(', ')
+            }]);
+        }
+      } else {
+          alert('Album not found');
+          navigate('/archive/custom');
+      }
+      setIsLoading(false);
+    }
+    fetchAlbumData();
+  }, [albumId, getAlbumById, navigate]);
 
   useEffect(() => {
     setActiveImageIdx(0);
@@ -72,7 +130,7 @@ export default function CustomCreatePage() {
     const newItem = {
       id: Date.now(),
       title: '',
-      category: 'music',
+      category: 'custom',
       imageUrls: [],
       rating: 0,
       hashtags: [],
@@ -98,7 +156,7 @@ export default function CustomCreatePage() {
     }
     const newItems = items.filter((_, i) => i !== index);
     setItems(newItems);
-    if (activeTab === index) setActiveTab(0);
+    if (activeTab === index) setActiveTab('album');
     else if (activeTab > index && activeTab !== 'album') setActiveTab(activeTab - 1);
   };
 
@@ -145,7 +203,6 @@ export default function CustomCreatePage() {
     
     setIsSubmitting(true);
     try {
-      // API payload 구조화 (스토어 함수가 요구하는 형태로 변환)
       const payload = {
         title: albumMeta.title,
         category: albumMeta.category,
@@ -163,6 +220,7 @@ export default function CustomCreatePage() {
         author: items[0]?.author || '',
         relatedArtists: items[0]?.relatedArtists || '',
         additionalItems: items.map(it => ({
+          id: typeof it.id === 'string' ? it.id : undefined, // Keep id if it's existing UUID, ignore if timestamp
           title: it.title,
           category: it.category,
           imageUrl: it.imageUrls?.[0] || '',
@@ -180,10 +238,10 @@ export default function CustomCreatePage() {
         }))
       };
       
-      await createCustomAlbum(payload);
-      navigate('/archive/custom');
+      await updateCustomAlbum(albumId, payload);
+      navigate(`/archive/custom/${albumId}`);
     } catch (error) {
-      alert("Failed to create album.");
+      alert("Failed to update album.");
       setIsSubmitting(false);
     }
   };
@@ -206,6 +264,14 @@ export default function CustomCreatePage() {
     ]
   };
 
+  if (isLoading) {
+    return (
+      <div className="custom-create-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Loader2 className="spinner" size={40} />
+      </div>
+    );
+  }
+
   return (
     <div className="custom-create-page">
       <div className="create-header">
@@ -213,16 +279,16 @@ export default function CustomCreatePage() {
           <ArrowLeft size={20} />
           <span>Back</span>
         </button>
-        <h1 className="create-title">Create Custom Album</h1>
+        <h1 className="create-title">Edit Custom Album</h1>
         <button 
           className="submit-btn" 
           onClick={handleSubmit} 
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Creating...' : (
+          {isSubmitting ? 'Saving...' : (
             <>
               <Save size={18} />
-              <span>Save Complete Album</span>
+              <span>Update Album</span>
             </>
           )}
         </button>
@@ -257,7 +323,7 @@ export default function CustomCreatePage() {
 
       <div className="create-content">
         {/* 중앙 에디터 (아이템 모드) */}
-        {activeTab !== 'album' && (
+        {activeTab !== 'album' && items[activeTab] && (
           <div className="create-form-section">
             <h2 className="section-title">Editing Item {activeTab + 1}</h2>
             

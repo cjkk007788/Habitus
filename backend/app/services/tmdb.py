@@ -391,8 +391,8 @@ async def get_trending_persons(page: int = 1, limit: int = 20) -> List[Dict[str,
             "id": str(person.get("id", "")),
             "external_id": str(person.get("id", "")),
             "external_source": "tmdb",
-            "item_type": "movie_person",
-            "itemType": "movie_person", # 프론트엔드 MediaCard 렌더링용
+            "item_type": "movie",
+            "itemType": "movie",  # 정규화: movie_person → movie
             "title": person.get("name", "Unknown Person"),
             "subtitle": subtitle,
             "cover_image_url": _build_poster_url(person.get("profile_path")),
@@ -403,6 +403,7 @@ async def get_trending_persons(page: int = 1, limit: int = 20) -> List[Dict[str,
                 "tmdb_id": person.get("id"),
                 "department": person.get("known_for_department"),
                 "popularity": person.get("popularity", 0.0),
+                "role": "person",  # 정규화: movie_person → movie, role 보존
             },
             "type": "Person"
         })
@@ -450,7 +451,7 @@ async def search_person(query: str, limit: int = 10) -> List[Dict[str, Any]]:
         results.append({
             "external_id": str(person.get("id", "")),
             "external_source": "tmdb",
-            "item_type": "movie_person",
+            "item_type": "movie",
             "title": person.get("name", "Unknown Person"),
             "subtitle": subtitle,
             "cover_image_url": _build_poster_url(person.get("profile_path")),
@@ -460,6 +461,7 @@ async def search_person(query: str, limit: int = 10) -> List[Dict[str, Any]]:
                 "tmdb_id": person.get("id"),
                 "department": person.get("known_for_department"),
                 "popularity": person.get("popularity", 0.0),
+                "role": "person",  # 정규화: movie_person → movie, role 보존
             },
         })
 

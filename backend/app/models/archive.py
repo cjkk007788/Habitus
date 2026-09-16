@@ -168,3 +168,24 @@ class ItemLink(Base):
     label = Column(String, nullable=True)                  # 표시 이름 (예: "공식 MV", "라이브 버전")
 
     item = relationship("Item", back_populates="links")
+
+
+# ============================================================
+# Comment (앨범 댓글)
+# ============================================================
+
+class Comment(Base):
+    """
+    앨범(큐레이션)에 달리는 댓글 테이블
+    """
+    __tablename__ = "comments"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    album_id = Column(UUID(as_uuid=True), ForeignKey("albums.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    content = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    # 관계 설정 (필요시 양방향 관계 추가 가능)
+    user = relationship("User")
+    album = relationship("Album")

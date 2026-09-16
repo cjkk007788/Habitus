@@ -18,6 +18,9 @@ export default function RightSidebarFooter({
     editingAlbumId,
     updateAlbumWithStagedItems,
     stagedAlbumTitle,
+    stagedAlbumCover,
+    stagedAlbumDescription,
+    stagedAlbumLayout,
     updateItem,
     addAlbumWithItems,
     stagedMixBlocks,
@@ -129,7 +132,13 @@ export default function RightSidebarFooter({
             if (editingAlbumId) {
               console.log("[RightSidebarFooter] Case 1: editingAlbumId");
               try {
-                await updateAlbumWithStagedItems(editingAlbumId, stagedAlbumTitle, stagedItems);
+                const albumData = {
+                  albumTitle: stagedAlbumTitle,
+                  coverImage: stagedAlbumCover,
+                  description: stagedAlbumDescription,
+                  layout: stagedAlbumLayout
+                };
+                await updateAlbumWithStagedItems(editingAlbumId, albumData, stagedItems);
                 clearStagedItems();
                 alert('Saved to Archive!');
                 closeRightSidebar();
@@ -219,7 +228,10 @@ export default function RightSidebarFooter({
                 albumTitle: stagedAlbumTitle.trim() !== ''
                   ? stagedAlbumTitle.trim()
                   : (stagedItems[0].itemData.title + (stagedItems.length > 1 ? ` and ${stagedItems.length - 1} more` : '')),
-                category: stagedItems[0].itemData.itemType
+                category: stagedItems[0].itemData.itemType,
+                coverImage: stagedAlbumCover,
+                description: stagedAlbumDescription,
+                layout: stagedAlbumLayout
               };
               console.log("[RightSidebarFooter] albumData:", albumData);
 

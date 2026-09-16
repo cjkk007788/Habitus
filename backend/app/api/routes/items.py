@@ -6,7 +6,7 @@ import httpx
 import logging
 
 from app.api.dependencies import get_db, get_current_user
-from app.models.archive import Item, User, Album, Mix, mix_albums, mix_items, album_items
+from app.models.archive import Item, User, Album, Mix, mix_albums, mix_items, album_items, ItemLink
 from app.schemas.item import ItemCreate, ItemUpdate, ItemResponse
 from app.core.config import settings
 
@@ -108,6 +108,17 @@ def create_item(
 
     db_item = Item(**item_data, user_id=current_user.id)
     db.add(db_item)
+    db.flush()
+    
+    if item_in.links:
+        for link_in in item_in.links:
+            db_link = ItemLink(
+                item_id=db_item.id,
+                platform=link_in.platform,
+                url=link_in.url
+            )
+            db.add(db_link)
+
     db.commit()
     db.refresh(db_item)
     return db_item
@@ -165,6 +176,16 @@ def update_item(
     for field, value in update_data.items():
         setattr(db_item, field, value)
         
+    if item_in.links is not None:
+        db.query(ItemLink).filter(ItemLink.item_id == db_item.id).delete()
+        for link_in in item_in.links:
+            db_link = ItemLink(
+                item_id=db_item.id,
+                platform=link_in.platform,
+                url=link_in.url
+            )
+            db.add(db_link)
+            
     db.commit()
     db.refresh(db_item)
     return db_item

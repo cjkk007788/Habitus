@@ -1,6 +1,9 @@
 export const createStagingSlice = (set, get) => ({
   stagedItems: [], // Items added to the staging area (for Album creation)
   stagedAlbumTitle: '', // Album title being drafted
+  stagedAlbumCover: '',
+  stagedAlbumDescription: '',
+  stagedAlbumLayout: 'classic',
   draftForm: { rating: 0, isPublic: true, review: '', tags: [] }, // Persists user input before adding
   editingAlbumId: null,
 
@@ -15,6 +18,9 @@ export const createStagingSlice = (set, get) => ({
   setEditingAlbumId: (id) => set({ editingAlbumId: id }),
   setEditingMixId: (id) => set({ editingMixId: id }),
   setStagedAlbumTitle: (title) => set({ stagedAlbumTitle: title }),
+  setStagedAlbumCover: (cover) => set({ stagedAlbumCover: cover }),
+  setStagedAlbumDescription: (desc) => set({ stagedAlbumDescription: desc }),
+  setStagedAlbumLayout: (layout) => set({ stagedAlbumLayout: layout }),
   setStagedMixCoverImage: (url) => set({ stagedMixCoverImage: url }),
   setStagedMixDescription: (desc) => set({ stagedMixDescription: desc }),
   addStagedItem: (item) => set((state) => {
@@ -36,6 +42,9 @@ export const createStagingSlice = (set, get) => ({
   clearStagedItems: () => set({ 
     stagedItems: [], 
     stagedAlbumTitle: '', 
+    stagedAlbumCover: '',
+    stagedAlbumDescription: '',
+    stagedAlbumLayout: 'classic',
     editingAlbumId: null,
     stagedMixBlocks: [],
     stagedMixCoverImage: '',

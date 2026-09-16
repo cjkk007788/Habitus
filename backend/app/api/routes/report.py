@@ -99,11 +99,12 @@ async def get_taste_analysis(
                 name = str(c.get("name", "")).strip()
                 if name:
                     # 프론트엔드 어댑터에서 subtitle을 무조건 contributors[{name}]에 넣는 동작으로 인해
-                    # 국가코드(KR), 긴 설명문(overview) 등이 아티스트로 잘못 집계되는 현상 방지
+                    # contributors가 없고 item_type=music이면서 role=artist이면 아이템 자체가 아티스트
                     if not role:
                         if len(name) > 40 or "..." in name or " · " in name or name in ("KR", "US", "UK", "JP", "Group", "Person"):
                             continue
-                        if item.item_type in ("music_artist", "movie_person"):
+                        # role=artist인 music 아이템(구 music_artist)은 스킵
+                        if media_meta.get("role") in ("artist", "person"):
                             continue
                             
                     if not role or role in ("artist", "director", "author", "composer", "performer", "actor"):
@@ -125,15 +126,17 @@ async def get_taste_analysis(
                 if isinstance(a, str) and a:
                     found_artists.add(a)
 
-        # 4) contributors가 없고 music 타입이면 subtitle 사용
-        if not contributors and item.item_type == "music" and getattr(item, "subtitle", None):
-            found_artists.add(item.subtitle)
-            
-        # 5) movie_person 타입이면 아이템 자체가 아티스트임
+        # 정규화 이후: role=artist인 music 아이템은 아이템 자체가 아티스트
+        if media_meta.get("role") == "artist" and item.title:
+            found_artists.add(item.title)
+        
+        # 정규화 이후: role=person인 movie 아이템은 아이템 자체가 아티스트/인물
+        if media_meta.get("role") == "person" and item.title:
+            found_artists.add(item.title)
+
+        # 하위 호환: 이미 DB에 남아있는 구 타입 처리
         if item.item_type == "movie_person" and item.title:
             found_artists.add(item.title)
-            
-        # 6) music_artist 타입이면 아이템 자체가 아티스트임
         if item.item_type == "music_artist" and item.title:
             found_artists.add(item.title)
             
@@ -142,8 +145,15 @@ async def get_taste_analysis(
             add_artist(artist_name, item.item_type, item.id)
 
             
-        # Tally Genres
-        if item.item_type in ["music", "movie", "book"]:
+        # Tally Genres — 정규화 후 whitelist: music, movie, book
+        # 하위 호환: DB에 남아있는 구 타입(music_artist, movie_person, custom)도 포함
+        effective_type = item.item_type
+        if effective_type in ("music_artist",):
+            effective_type = "music"
+        elif effective_type in ("movie_person",):
+            effective_type = "movie"
+
+        if effective_type in ["music", "movie", "book"]:
             genre_val = media_meta.get("genre")
             if genre_val and isinstance(genre_val, str):
                 add_genre(genre_val, item.item_type, item.id)

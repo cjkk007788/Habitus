@@ -9,6 +9,9 @@ export default function useRightSidebarLogic() {
     stagedItems, clearStagedItems,
     draftForm, setDraftForm, clearDraftForm, updateStagedItemForm,
     stagedAlbumTitle, setStagedAlbumTitle, setStagedItems,
+    stagedAlbumCover, setStagedAlbumCover,
+    stagedAlbumDescription, setStagedAlbumDescription,
+    stagedAlbumLayout, setStagedAlbumLayout,
     setEditingAlbumId
   } = useArchiveStore();
 
@@ -101,29 +104,28 @@ export default function useRightSidebarLogic() {
     : activeSidebarItem;
 
   const isMusic = item?.itemType === 'music' || item?.itemType === 'music_artist';
-  const isMovie = item?.itemType === 'movie';
-  const isMoviePerson = item?.itemType === 'movie_person';
+  const isMovie = item?.itemType === 'movie' || item?.itemType === 'movie_person';
   const isBook = item?.itemType === 'book';
 
-  const categoryLabel = isMusic ? '🎵 Music' : isMovie ? '🎬 Movie' : isMoviePerson ? '👤 Movie Person' : isBook ? '📚 Book' : item?.mixTitle ? '📦 Mix' : 'Content';
+  const categoryLabel = isMusic ? '🎵 Music' : isMovie ? '🎬 Movie' : isBook ? '📚 Book' : item?.mixTitle ? '📦 Mix' : 'Content';
 
   const getCreatorName = (it) => {
     if (!it) return 'Unknown';
-    if (it.itemType === 'music_artist') return 'Artist';
-    if (it.itemType === 'movie_person') return it.mediaMeta?.department || 'Movie Person';
-    if (it.itemType === 'movie') return 'Movie';
+    // movie/music 통합 — role 구분 없이 contributors에서 이름 추출 또는 타입 표기
+    if (it.itemType === 'movie' || it.itemType === 'movie_person') {
+      const contributors = it.mediaMeta?.contributors;
+      if (contributors && contributors.length > 0) return contributors[0].name || 'Movie';
+      return it.subtitle || 'Movie';
+    }
     if (it.itemType === 'book') {
       const contributors = it.mediaMeta?.contributors;
-      if (contributors && contributors.length > 0) {
-        return contributors[0].name || 'Author';
-      }
+      if (contributors && contributors.length > 0) return contributors[0].name || 'Author';
       return 'Unknown Author';
     }
+    // music (music_artist 포함)
     const contributors = it.mediaMeta?.contributors;
-    if (contributors && contributors.length > 0) {
-      return contributors[0].name || 'Unknown Artist';
-    }
-    return 'Unknown Artist';
+    if (contributors && contributors.length > 0) return contributors[0].name || 'Unknown Artist';
+    return it.subtitle || 'Unknown Artist';
   };
 
   const year = item?.releaseDate ? item.releaseDate.substring(0, 4) : (item?.mediaMeta?.releaseYear || 'Unknown Year');
@@ -134,6 +136,12 @@ export default function useRightSidebarLogic() {
     stagedItems,
     stagedAlbumTitle,
     setStagedAlbumTitle,
+    stagedAlbumCover,
+    setStagedAlbumCover,
+    stagedAlbumDescription,
+    setStagedAlbumDescription,
+    stagedAlbumLayout,
+    setStagedAlbumLayout,
     scrollRef,
     viewingStagedIndex,
     setViewingStagedIndex,
@@ -142,7 +150,6 @@ export default function useRightSidebarLogic() {
     item,
     isMusic,
     isMovie,
-    isMoviePerson,
     isBook,
     categoryLabel,
     year,

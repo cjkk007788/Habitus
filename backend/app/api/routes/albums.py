@@ -4,8 +4,9 @@ from typing import List, Optional
 from uuid import UUID
 
 from app.api.dependencies import get_db, get_current_user
-from app.models.archive import Album, Item, User
+from app.models.archive import Album, Item, User, Comment
 from app.schemas.album import AlbumCreate, AlbumUpdate, AlbumResponse, AlbumListResponse
+from app.schemas.comment import CommentCreate, CommentResponse
 
 router = APIRouter()
 
@@ -42,8 +43,7 @@ def read_custom_albums(
 ):
     """커스텀 카테고리의 앨범만 조회. category 파라미터로 추가 필터 가능."""
     query = db.query(Album).filter(
-        Album.user_id == current_user.id,
-        Album.category.in_(["custom", "place", "food", "fashion", "moment", "quote"])
+        Album.user_id == current_user.id
     )
     if category and category != "all":
         query = query.filter(Album.category == category)
@@ -140,3 +140,55 @@ def sync_items_to_album(
     db.commit()
     db.refresh(album)
     return album
+
+
+@router.post("/{album_id}/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
+def create_comment(
+    album_id: UUID,
+    comment_in: CommentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    album = db.query(Album).filter(Album.id == album_id).first()
+    if not album:
+        raise HTTPException(status_code=404, detail="Album not found")
+        
+    db_comment = Comment(**comment_in.model_dump(), album_id=album_id, user_id=current_user.id)
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+    
+    # inject username for frontend
+    db_comment.username = current_user.username
+    return db_comment
+
+@router.get("/{album_id}/comments", response_model=List[CommentResponse])
+def read_comments(
+    album_id: UUID,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    album = db.query(Album).filter(Album.id == album_id).first()
+    if not album:
+        raise HTTPException(status_code=404, detail="Album not found")
+        
+    comments = db.query(Comment).filter(Comment.album_id == album_id).order_by(Comment.created_at.desc()).offset(skip).limit(limit).all()
+    for c in comments:
+        c.username = c.user.username if c.user else None
+    return comments
+
+@router.delete("/{album_id}/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_comment(
+    album_id: UUID,
+    comment_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    comment = db.query(Comment).filter(Comment.id == comment_id, Comment.album_id == album_id, Comment.user_id == current_user.id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found or not authorized")
+        
+    db.delete(comment)
+    db.commit()
+    return None

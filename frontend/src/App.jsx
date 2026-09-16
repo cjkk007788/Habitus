@@ -8,6 +8,8 @@ import ArchiveContent from './pages/Archive/Content/ArchiveContent';
 import ArchiveReport from './pages/Archive/Report/ArchiveReport';
 import ArchiveCustom from './pages/Archive/Custom/ArchiveCustom';
 import CustomCreatePage from './pages/Archive/Custom/CustomCreatePage';
+import CustomDetailPage from './pages/Archive/Custom/CustomDetailPage';
+import CustomEditPage from './pages/Archive/Custom/CustomEditPage';
 import Social from './pages/Social';
 
 /*
@@ -44,6 +46,8 @@ function App() {
           <Route path="custom" element={<ArchiveCustom />} />
         </Route>
         <Route path="/archive/custom/create" element={<CustomCreatePage />} />
+        <Route path="/archive/custom/:albumId" element={<CustomDetailPage />} />
+        <Route path="/archive/custom/:albumId/edit" element={<CustomEditPage />} />
         <Route path="/social" element={<Social />} />
       </Route>
     </Routes>

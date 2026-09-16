@@ -25,7 +25,7 @@ export default function ArchiveAlbumRow({ album, onRemove }) {
   const uniqueCategories = [...new Set(resolvedItems.map(item => {
     const rawType = (item.mediaMeta?.rawFrontendData?.itemType || item.itemType || item.item_type || item.category || "").toLowerCase();
     
-    // 명시적인 타입이 있으면 우선 사용 (예: music_artist, movie_person)
+    // 명시적인 타입이 있으면 우선 사용 (정규화 후: music, movie, book + role 기반 판별)
     if (rawType) return rawType;
 
     // 타입 필드가 아예 비어있는 옛날/망가진 데이터의 경우 출처로 대체

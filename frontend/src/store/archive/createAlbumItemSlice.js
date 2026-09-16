@@ -150,6 +150,40 @@ export const createAlbumItemSlice = (set, get) => ({
 
       const finalCategory = calculateAlbumCategory(backendTypes);
 
+      // --- Create Meta Item (앨범 껍데기 디자인용 아이템) ---
+      const metaItemPayload = {
+        title: albumData.albumTitle || 'Untitled Album',
+        item_type: finalCategory,
+        external_source: 'custom',
+        cover_image_url: albumData.coverImage || localItemsToInsert[0]?.coverImages?.[0] || '',
+        rating: 0,
+        impression: '',
+        description: albumData.description || '',
+        genres: [],
+        media_meta: {},
+        user_meta: {
+          is_meta_item: true,
+          pin_layout: albumData.layout || 'classic',
+          pin_style: {}
+        },
+        links: []
+      };
+      
+      const createdMetaItem = await createItem(metaItemPayload);
+      savedItemIds.unshift(createdMetaItem.id);
+      localItemsToInsert.unshift({
+        id: createdMetaItem.id,
+        itemType: createdMetaItem.item_type,
+        title: createdMetaItem.title,
+        coverImages: [createdMetaItem.cover_image_url],
+        rating: createdMetaItem.rating,
+        impression: createdMetaItem.impression,
+        isPublic: createdMetaItem.is_public,
+        date: createdMetaItem.created_at || timestamp,
+        userMeta: createdMetaItem.user_meta
+      });
+      // ----------------------------------------------------
+
       // 2. 백엔드에 카드 생성 (SQLite 저장)
       const albumPayload = {
         title: albumData.albumTitle || 'Untitled Album',
@@ -202,12 +236,14 @@ export const createAlbumItemSlice = (set, get) => ({
   },
 
   // 편집 중인 카드 전체 업데이트 로직 (기존 아이템은 수정, 새 아이템은 생성)
-  updateAlbumWithStagedItems: async (albumId, albumTitle, stagedItemsArray) => {
+  updateAlbumWithStagedItems: async (albumId, albumData, stagedItemsArray) => {
     try {
       const timestamp = new Date().toISOString();
       const localItemsToInsert = [];
       const updatedItemIds = [];
       const backendTypes = [];
+      
+      const albumTitle = albumData.albumTitle || 'Untitled Album';
 
       // 1. 개별 아이템 처리 (생성 또는 수정)
       for (const st of stagedItemsArray) {
@@ -286,12 +322,35 @@ export const createAlbumItemSlice = (set, get) => ({
       // 2. 카드의 정보(타이틀 및 카테고리) 백엔드 갱신
       const finalCategory = calculateAlbumCategory(backendTypes);
       const albumPayload = {
-        title: albumTitle || 'Untitled Album',
+        title: albumTitle,
         category: finalCategory
       };
       await updateAlbum(albumId, albumPayload);
 
-      // 3. 카드에 포함된 아이템 목록 백엔드 동기화 (순서/삭제 포함)
+      // 3. Meta Item 업데이트 로직
+      // stagedItemsArray의 첫 번째 항목이나 혹은 백엔드의 기존 Meta Item을 찾아서 업데이트
+      // 하지만 여기서는 스토어의 기존 items를 검사해서 업데이트 해야함
+      const existingAlbum = get().albums.find(a => a.id === albumId);
+      if (existingAlbum) {
+         const firstItemId = existingAlbum.itemIds[0];
+         if (firstItemId) {
+            const firstItem = get().items.find(i => i.id === firstItemId);
+            if (firstItem && firstItem.userMeta?.is_meta_item) {
+               // Update existing meta item
+               await updateItem(firstItemId, {
+                  title: albumTitle,
+                  cover_image_url: albumData.coverImage || firstItem.coverImages?.[0] || '',
+                  description: albumData.description || '',
+                  user_meta: {
+                    ...(firstItem.userMeta || {}),
+                    pin_layout: albumData.layout || 'classic'
+                  }
+               });
+            }
+         }
+      }
+
+      // 4. 카드에 포함된 아이템 목록 백엔드 동기화 (순서/삭제 포함)
       await syncItemsToAlbum(albumId, updatedItemIds);
 
       // 4. 로컬 스토어 갱신

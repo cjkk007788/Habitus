@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Pin, Loader2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Pin, Loader2, Plus } from 'lucide-react';
 import { useCustomArchiveStore } from '../../../store/custom/useCustomArchiveStore';
 import MasonryGrid from './components/Display/MasonryGrid';
 import CustomPinCard from './components/Display/CustomPinCard';
@@ -9,31 +9,45 @@ import './ArchiveCustom.css';
 
 const TABS = [
   { id: 'all', label: 'All' },
-  { id: 'custom', label: 'Custom' },
   { id: 'music', label: 'Music' },
   { id: 'movie', label: 'Movie' },
   { id: 'book', label: 'Book' },
+  { id: 'fusion', label: 'Fusion' },
 ];
 
 export default function ArchiveCustom() {
   const { customAlbums, activeFilter, setActiveFilter, loadCustomAlbums, isLoading } = useCustomArchiveStore();
-  const openRightSidebar = useSidebarStore(state => state.openRightSidebar);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadCustomAlbums();
   }, [loadCustomAlbums]);
 
   const handleCardClick = (album) => {
-    // 사이드바에 띄우기 (커스텀 핀은 Album 타입)
-    openRightSidebar({
-      ...album,
-      _viewType: 'album' // 우측 사이드바가 앨범 모드로 열리도록 힌트
-    });
+    navigate(`/archive/custom/${album.id}`);
   };
 
   return (
     <div className="archive-custom">
       <div className="custom-header">
+        <div className="custom-tabs">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              className={`custom-tab ${activeFilter === tab.id ? 'active' : ''}`}
+              onClick={() => {
+                setActiveFilter(tab.id);
+                loadCustomAlbums(tab.id);
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <Link to="/archive/custom/create" className="create-pin-btn">
+          <Plus size={18} />
+          <span>Create Album</span>
+        </Link>
       </div>
       {isLoading ? (
         <div className="custom-loading">

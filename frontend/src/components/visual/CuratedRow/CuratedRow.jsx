@@ -107,7 +107,7 @@ export default function CuratedRow({ category, curationId, title }) {
             _key: item.id,
             id: item.id,
             external_id: item.external_id || item.id,
-            itemType: isPerson ? 'movie_person' : 'movie',
+            itemType: 'movie',  // 정규화: movie_person → movie
             type: isPerson ? 'Person' : 'Movie',
             title: item.title,
             subtitle: item.subtitle || '',
@@ -122,7 +122,9 @@ export default function CuratedRow({ category, curationId, title }) {
               releaseYear: item.release_date ? item.release_date.substring(0, 4) : 'Unknown',
               overview: item.overview || '',
               vote_average: item.vote_average || 0,
-              contributors: []
+              contributors: [],
+              role: isPerson ? 'person' : undefined,  // 정규화: role을 mediaMeta에 보존
+              department: item.department || undefined,
             }
           };
         });
