@@ -1,0 +1,280 @@
+/* ================================================
+   Community Digging Page — 핀터레스트 스타일
+   ================================================ */
+
+.community-page {
+  padding: 32px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ── 헤더 ─────────────────────────────────────── */
+.community-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.community-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.community-icon {
+  color: var(--accent-color, #8b5cf6);
+  flex-shrink: 0;
+}
+
+.community-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 4px;
+}
+
+.community-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+/* ── 검색 ─────────────────────────────────────── */
+.community-search-form { flex: 1; max-width: 480px; }
+
+.community-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px 14px;
+  transition: border-color 0.2s;
+}
+
+.community-search-box:focus-within {
+  border-color: rgba(167, 139, 250, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.community-search-icon { color: rgba(255, 255, 255, 0.4); flex-shrink: 0; }
+
+.community-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.community-search-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+
+.community-search-btn {
+  background: var(--accent-color, #8b5cf6);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+.community-search-btn:hover { opacity: 0.85; }
+
+/* ── 필터 바 ──────────────────────────────────── */
+.community-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.community-category-tabs,
+.community-sort-tabs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.community-cat-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.community-cat-tab:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.community-cat-tab.active {
+  background: var(--accent-color, #8b5cf6);
+  border-color: var(--accent-color, #8b5cf6);
+  color: #fff;
+}
+
+.community-sort-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.78rem;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.community-sort-btn:hover { color: #fff; border-color: rgba(255, 255, 255, 0.25); }
+.community-sort-btn.active { border-color: var(--accent-color, #8b5cf6); color: var(--accent-color, #8b5cf6); }
+
+.community-refresh-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 7px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+.community-refresh-btn:hover { color: #fff; border-color: rgba(255, 255, 255, 0.25); }
+
+/* ── 검색어 배너 ───────────────────────────────── */
+.community-search-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+.community-search-banner button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: color 0.2s;
+}
+.community-search-banner button:hover { color: #fff; }
+
+/* ── 로딩 / 에러 / 빈 상태 ────────────────────── */
+.community-loading,
+.community-error,
+.community-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 20px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+  text-align: center;
+}
+.community-spinner { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.community-empty-hint { font-size: 0.8rem; opacity: 0.6; }
+
+/* ── Masonry 그리드 ────────────────────────────── */
+.community-masonry-grid {
+  columns: 4 280px;
+  column-gap: 16px;
+}
+
+.community-pin-wrapper {
+  position: relative;
+  break-inside: avoid;
+  margin-bottom: 16px;
+}
+
+.community-author-badge {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.community-similarity-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #8b5cf6, #60a5fa);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .community-masonry-grid { columns: 2 200px; }
+  .community-header { flex-direction: column; align-items: flex-start; }
+  .community-search-form { max-width: 100%; width: 100%; }
+}
+
+/* ── 작성자 헤더 ───────────────────────────────── */
+.community-author-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 10px 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+.community-author-header:hover {
+  opacity: 0.8;
+}
+
+.author-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent-color, #8b5cf6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.author-name {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 500;
+}

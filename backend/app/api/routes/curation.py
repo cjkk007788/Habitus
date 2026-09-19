@@ -17,7 +17,48 @@ async def get_music_curation_lists():
 
 @router.get("/music/{curation_id}")
 async def get_music_curation_items(curation_id: str, page: int = 1, limit: int = 10):
-    if curation_id == "top_tracks":
+    if curation_id.startswith("artist_"):
+        artist_name = curation_id.replace("artist_", "")
+        # Use iTunes to get top tracks for this artist
+        try:
+            results = await itunes.search_artist_tracks(artist=artist_name, limit=limit)
+            if results:
+                formatted = []
+                for t in results:
+                    formatted.append({
+                        "name": t.get("track_name", ""),
+                        "artist": {"name": t.get("artist_name", "")},
+                        "image_url": t.get("artwork_url", "").replace("100x100bb", "600x600bb"),
+                        "preview_url": t.get("preview_url", ""),
+                        "genre": t.get("primary_genre_name", "")
+                    })
+                return formatted
+        except Exception as e:
+            logger.error("Error fetching artist curation: %s", e)
+        return []
+
+    elif curation_id.startswith("genre_"):
+        genre_name = curation_id.replace("genre_", "")
+        # Fetching genre specific tracks (we can use Last.fm tag.getTopTracks)
+        try:
+            track_list = await lastfm.get_top_tracks_by_tag(tag=genre_name, limit=limit, page=page)
+            # Enrich with iTunes
+            async def enrich_genre_track(track):
+                artist_n = track.get("artist", {}).get("name", "")
+                track_n = track.get("name", "")
+                if artist_n and track_n:
+                    from app.services import itunes
+                    itunes_data = await itunes.search_track(artist_n, track_n)
+                    if itunes_data and itunes_data.get("artwork_url"):
+                        track["image_url"] = itunes_data["artwork_url"].replace("100x100bb", "600x600bb")
+                return track
+            enriched = await asyncio.gather(*(enrich_genre_track(t) for t in track_list))
+            return list(enriched)
+        except Exception as e:
+            logger.error("Error fetching genre curation: %s", e)
+        return []
+
+    elif curation_id == "top_tracks":
         tracks = await lastfm.get_global_top_tracks(page=page, limit=limit)
         # Fetch actual track artwork from iTunes (Last.fm images are placeholders now)
         async def enrich_track(track):
@@ -66,6 +107,25 @@ async def get_movie_curation_items(curation_id: str, page: int = 1, limit: int =
         return await tmdb.get_trending_persons(page=page, limit=limit)
     elif curation_id == "top_rated":
         return await tmdb.get_top_rated_movies(page=page, limit=limit)
+    elif curation_id.startswith("genre_"):
+        genre_name = curation_id.replace("genre_", "")
+        genres = await tmdb.get_movie_genres()
+        genre_id = None
+        for g in genres:
+            if g["name"].lower() == genre_name.lower():
+                genre_id = g["id"]
+                break
+        
+        if genre_id:
+            return await tmdb.get_movies_by_genre(genre_id=genre_id, page=page, limit=limit)
+        else:
+            logger.warning(f"Could not find TMDB genre ID for '{genre_name}'")
+            return []
+            
+    elif curation_id.startswith("person_"):
+        person_name = curation_id.replace("person_", "")
+        return await tmdb.get_movies_by_person_name(person_name=person_name, limit=limit)
+    
     return []
 
 # --- Book Curations ---

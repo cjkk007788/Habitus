@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Trash2, Plus } from 'lucide-react';
 
+//Create album page edit 중앙에 있는 item에 들어가는 여러 이미지들의 캐러셀
 export default function CustomImageCarousel({ images, activeIndex, setActiveIndex, onRemove, onImageClick, onAddClick }) {
   const cards = [...(images || []), 'add-action'];
 
@@ -70,11 +71,11 @@ export default function CustomImageCarousel({ images, activeIndex, setActiveInde
               }}
             >
               {!isAction && (
-                <img 
-                  src={url} 
-                  alt={`preview-${idx}`} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }} 
-                  onError={(e) => e.target.src = ''} 
+                <img
+                  src={url}
+                  alt={`preview-${idx}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }}
+                  onError={(e) => e.target.src = ''}
                 />
               )}
 
@@ -84,7 +85,7 @@ export default function CustomImageCarousel({ images, activeIndex, setActiveInde
                   <div style={{ marginTop: '12px', fontSize: '0.9rem', fontWeight: 600 }}>Add Image</div>
                 </>
               )}
-              
+
               {!isAction && isCurrent && (
                 <button
                   onClick={(e) => {
@@ -118,13 +119,13 @@ export default function CustomImageCarousel({ images, activeIndex, setActiveInde
       {/* 화살표 */}
       {cards.length > 1 && (
         <>
-          <button 
+          <button
             onClick={() => go(activeIndex > 0 ? activeIndex - 1 : cards.length - 1)}
             style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}
           >
             <ChevronLeft size={20} />
           </button>
-          <button 
+          <button
             onClick={() => go(activeIndex < cards.length - 1 ? activeIndex + 1 : 0)}
             style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }}
           >

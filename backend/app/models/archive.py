@@ -42,6 +42,14 @@ album_items = Table(
     Column('order_index', Integer, default=0)
 )
 
+album_likes = Table(
+    'album_likes',
+    Base.metadata,
+    Column('user_id', UUID(as_uuid=True), ForeignKey('users.id', ondelete="CASCADE"), primary_key=True),
+    Column('album_id', UUID(as_uuid=True), ForeignKey('albums.id', ondelete="CASCADE"), primary_key=True),
+    Column('created_at', DateTime(timezone=True), server_default=func.now())
+)
+
 
 # ============================================================
 # User (유저)
@@ -89,12 +97,15 @@ class Album(Base):
     title = Column(String, index=True)
     category = Column(String)                              # "music", "movie", "book", "art", "style"
     is_public = Column(Boolean, default=False)
+    embedding = Column(JSON, nullable=True)                 # 유사도 검색용 벡터 (float 리스트)
+    likes_count = Column(Integer, default=0)                # 앨범 좋아요 수
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     owner = relationship("User", back_populates="albums")
     mixes = relationship("Mix", secondary=mix_albums, back_populates="albums")
     items = relationship("Item", secondary=album_items, back_populates="albums")
+    liked_by = relationship("User", secondary=album_likes, backref="liked_albums")
 
 
 

@@ -36,13 +36,15 @@ export default function Digging() {
     setSearchResults, setIsSearching, setSearchError,
   } = useSearchStore();
 
+  const [dynamicCurations, setDynamicCurations] = useState([]);
+  const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+
   const activeCategory = (searchFilter && searchFilter !== 'all') ? searchFilter : 'music';
   
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   useEffect(() => {
     setSelectedGenre(null); // Reset genre when category changes via Navbar
-    // 실제 스크롤이 발생하는 컨테이너는 MainLayout에 있는 .layout-outlet-container 입니다.
     const scrollContainer = document.querySelector('.layout-outlet-container');
     if (scrollContainer) {
       scrollContainer.scrollTo({
@@ -50,6 +52,21 @@ export default function Digging() {
         behavior: 'smooth'
       });
     }
+
+    // Fetch dynamic curations for this category
+    const fetchDynamicCurations = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/recommend/dynamic-curation?category=${activeCategory}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDynamicCurations(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch dynamic curations:", err);
+      }
+    };
+    fetchDynamicCurations();
+
   }, [activeCategory]);
 
   // ─── 검색어 변경 시 API 호출 (디바운스 적용) ───────────────────────
@@ -85,7 +102,12 @@ export default function Digging() {
 
 
 
-  const curationRows = CURATION_CONFIG[activeCategory] || [];
+  // If dynamic curations are available, use them. Otherwise fallback to static config.
+  // Note: taste_dna is currently a placeholder for a future feature.
+  const validCurations = dynamicCurations.filter(c => c.id !== 'taste_dna');
+  const curationRows = validCurations.length > 0 
+    ? validCurations 
+    : (CURATION_CONFIG[activeCategory] || []);
 
   // Create sections array for the bookmark menu
   const bookmarkSections = [

@@ -40,6 +40,31 @@ async def search_track(artist: str, track: str) -> Optional[Dict[str, Any]]:
 
     return None
 
+async def search_artist_tracks(artist: str, limit: int = 10) -> list:
+    """
+    Search iTunes for an artist's top tracks.
+    """
+    params = {
+        "term": artist,
+        "media": "music",
+        "entity": "song",
+        "limit": limit,
+    }
+
+    data = await api_request(ITUNES_BASE_URL, params=params, timeout=5.0)
+    
+    results = []
+    if data and data.get("resultCount", 0) > 0:
+        for result in data["results"]:
+            results.append({
+                "preview_url": result.get("previewUrl"),
+                "artwork_url": result.get("artworkUrl100"),
+                "track_name": result.get("trackName"),
+                "artist_name": result.get("artistName"),
+                "apple_music_url": result.get("trackViewUrl"),
+                "primary_genre_name": result.get("primaryGenreName"),
+            })
+    return results
 
 async def get_artist_image_url(artist_name: str) -> Optional[str]:
     """

@@ -29,7 +29,9 @@ const buildMediaMeta = (images, formData) => {
   }
   
   if (formData.relatedArtists) {
-    meta.related_artists = formData.relatedArtists.split(',').map(s => s.trim()).filter(Boolean);
+    meta.related_artists = Array.isArray(formData.relatedArtists) 
+      ? formData.relatedArtists 
+      : formData.relatedArtists.split(',').map(s => s.trim()).filter(Boolean);
   }
   
   return meta;

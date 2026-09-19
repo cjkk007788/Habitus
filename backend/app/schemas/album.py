@@ -34,7 +34,19 @@ class AlbumResponse(AlbumInDBBase):
     # 이 앨범에 담긴 아이템 목록
     #여기에 Item 관련 정보들이 들어간다
     items: List[ItemResponse] = []
+    owner_username: Optional[str] = None  # 커뮤니티 뷰에서 작성자 표시용
+    likes_count: int = 0
+    is_liked: bool = False
 
 class AlbumListResponse(AlbumInDBBase):
     # 목록 조회 시에는 items 배열 대신 썸네일 정도만 포함하거나 개수만 포함할 수 있습니다.
     item_count: int = 0
+    likes_count: int = 0
+
+class CommunityAlbumResponse(AlbumInDBBase):
+    """커뮤니티 탐색 전용 응답 — 작성자 정보와 아이템 썸네일 포함"""
+    items: List[ItemResponse] = []
+    owner_username: Optional[str] = None
+    similarity_score: Optional[float] = None  # 유사도 검색 시 점수
+    likes_count: int = 0
+    is_liked: bool = False

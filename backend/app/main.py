@@ -14,7 +14,7 @@ from app.models import archive, catalog
 #basic SQL ALchemy
 #archiveItem, album all are derived from base
 #app/ model안에 있는 db 테이블을 상속받아서 만든다.
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine) # Removed for Alembic
 #metada는 데이터베이스의 클래스 설계도 모음
 #create_all -- > habitus.db에 접속
 #db에 없는 테이블이 있는지 확인하고 생성하는 명령
@@ -78,3 +78,12 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+@app.on_event("startup")
+def startup_event():
+    import threading
+    import logging
+    from app.services.embedding_service import _get_model
+    logger = logging.getLogger(__name__)
+    logger.info("Initializing embedding model in background...")
+    threading.Thread(target=_get_model, daemon=True).start()

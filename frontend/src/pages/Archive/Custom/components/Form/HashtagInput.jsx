@@ -6,7 +6,7 @@ export default function HashtagInput({ tags, onChange }) {
   const [inputValue, setInputValue] = useState('');
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ' || e.key === ',') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       addTag();
     }

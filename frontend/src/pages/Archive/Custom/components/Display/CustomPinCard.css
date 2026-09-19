@@ -242,3 +242,31 @@
   right: 0;
   height: 4px;
 }
+.pin-card__share-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  outline: none;
+}
+
+.pin-card__share-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.pin-card__share-btn.active {
+  background: rgba(155, 81, 224, 0.2);
+  border-color: rgba(155, 81, 224, 0.5);
+}
+
+.pin-card__share-btn.active:hover {
+  background: rgba(155, 81, 224, 0.3);
+}

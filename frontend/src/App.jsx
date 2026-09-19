@@ -11,6 +11,7 @@ import CustomCreatePage from './pages/Archive/Custom/CustomCreatePage';
 import CustomDetailPage from './pages/Archive/Custom/CustomDetailPage';
 import CustomEditPage from './pages/Archive/Custom/CustomEditPage';
 import Social from './pages/Social';
+import CommunityDiggingPage from './pages/Community/CommunityDiggingPage';
 
 /*
 This for general type of app.jsx for multi pages
@@ -49,6 +50,8 @@ function App() {
         <Route path="/archive/custom/:albumId" element={<CustomDetailPage />} />
         <Route path="/archive/custom/:albumId/edit" element={<CustomEditPage />} />
         <Route path="/social" element={<Social />} />
+        {/* Curation (formerly Community) */}
+        <Route path="/curation" element={<CommunityDiggingPage />} />
       </Route>
     </Routes>
   );

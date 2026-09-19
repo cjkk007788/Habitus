@@ -10,6 +10,8 @@ import StarRating from './components/Form/StarRating';
 import ImageUrlInput from './components/Form/ImageUrlInput';
 import LayoutPresetSelector from './components/Form/LayoutPresetSelector';
 import LinksInput from './components/Form/LinksInput';
+import SearchResultSection from '../../../components/digging/SearchResults/SearchResultSection';
+import useSearchStore from '../../../store/search/useSearchStore';
 import './CustomCreatePage.css';
 
 const CATEGORY_OPTIONS = [
@@ -22,6 +24,7 @@ export default function CustomEditPage() {
   const { albumId } = useParams();
   const navigate = useNavigate();
   const { getAlbumById, updateCustomAlbum } = useCustomArchiveStore();
+  const { clearSearch } = useSearchStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,10 +36,11 @@ export default function CustomEditPage() {
     category: 'music',
     coverImageUrl: '',
     additionalImages: [],
-    pinLayout: 'classic'
+    pinLayout: 'classic',
+    is_public: false
   });
 
-  const [activeTab, setActiveTab] = useState('album'); 
+  const [activeTab, setActiveTab] = useState('album');
   const [activeImageIdx, setActiveImageIdx] = useState(0);
 
   useEffect(() => {
@@ -48,13 +52,14 @@ export default function CustomEditPage() {
         const hasMetaItem = data.items?.some(i => i.userMeta?.is_meta_item);
         const metaItem = hasMetaItem ? data.items.find(i => i.userMeta?.is_meta_item) : {};
         const otherItems = hasMetaItem ? data.items.filter(i => i.id !== metaItem.id) : (data.items || []);
-        
+
         setAlbumMeta({
           title: data.title || '',
-          category: (['music','movie','book'].includes(data.category) ? data.category : 'music'),
+          category: (['music', 'movie', 'book'].includes(data.category) ? data.category : 'music'),
           coverImageUrl: metaItem.coverImageUrl || '',
           additionalImages: metaItem.mediaMeta?.images || [],
-          pinLayout: metaItem.userMeta?.pin_layout || 'classic'
+          pinLayout: metaItem.userMeta?.pin_layout || 'classic',
+          is_public: data.is_public || false
         });
 
         if (otherItems.length > 0) {
@@ -63,11 +68,11 @@ export default function CustomEditPage() {
             const artistsArr = Array.isArray(meta.artists) ? meta.artists : [];
             const relatedArr = Array.isArray(meta.related_artists) ? meta.related_artists : [];
             const contributors = Array.isArray(meta.contributors) ? meta.contributors : [];
-            
+
             return {
               id: it.id,
               title: it.title || '',
-              category: (['music','movie','book'].includes(it.itemType) ? it.itemType : 'music'),
+              category: (['music', 'movie', 'book'].includes(it.itemType) ? it.itemType : 'music'),
               imageUrls: [it.coverImageUrl, ...(it.mediaMeta?.images || [])].filter(Boolean),
               rating: it.rating || 0,
               hashtags: it.genres || [],
@@ -78,36 +83,36 @@ export default function CustomEditPage() {
               artists: artistsArr.join(', '),
               director: contributors.find(c => c.role === 'director')?.name || '',
               author: contributors.find(c => c.role === 'author')?.name || '',
-              relatedArtists: relatedArr.join(', ')
+              relatedArtists: relatedArr
             };
           }));
         } else {
-            // if only meta item, we still need at least 1 item to edit
-            const meta = metaItem.mediaMeta || {};
-            const artistsArr = Array.isArray(meta.artists) ? meta.artists : [];
-            const relatedArr = Array.isArray(meta.related_artists) ? meta.related_artists : [];
-            const contributors = Array.isArray(meta.contributors) ? meta.contributors : [];
+          // if only meta item, we still need at least 1 item to edit
+          const meta = metaItem.mediaMeta || {};
+          const artistsArr = Array.isArray(meta.artists) ? meta.artists : [];
+          const relatedArr = Array.isArray(meta.related_artists) ? meta.related_artists : [];
+          const contributors = Array.isArray(meta.contributors) ? meta.contributors : [];
 
-            setItems([{
-                id: Date.now(),
-                title: metaItem.title || '',
-                category: (['music','movie','book'].includes(metaItem.itemType) ? metaItem.itemType : 'music'),
-                imageUrls: [metaItem.coverImageUrl, ...(metaItem.mediaMeta?.images || [])].filter(Boolean),
-                rating: metaItem.rating || 0,
-                hashtags: metaItem.genres || [],
-                links: metaItem.links || [],
-                impression: metaItem.impression || '',
-                description: metaItem.description || '',
-                releaseYear: meta.releaseYear || '',
-                artists: artistsArr.join(', '),
-                director: contributors.find(c => c.role === 'director')?.name || '',
-                author: contributors.find(c => c.role === 'author')?.name || '',
-                relatedArtists: relatedArr.join(', ')
-            }]);
+          setItems([{
+            id: Date.now(),
+            title: metaItem.title || '',
+            category: (['music', 'movie', 'book'].includes(metaItem.itemType) ? metaItem.itemType : 'music'),
+            imageUrls: [metaItem.coverImageUrl, ...(metaItem.mediaMeta?.images || [])].filter(Boolean),
+            rating: metaItem.rating || 0,
+            hashtags: metaItem.genres || [],
+            links: metaItem.links || [],
+            impression: metaItem.impression || '',
+            description: metaItem.description || '',
+            releaseYear: meta.releaseYear || '',
+            artists: artistsArr.join(', '),
+            director: contributors.find(c => c.role === 'director')?.name || '',
+            author: contributors.find(c => c.role === 'author')?.name || '',
+            relatedArtists: relatedArr
+          }]);
         }
       } else {
-          alert('Album not found');
-          navigate('/archive/custom');
+        alert('Album not found');
+        navigate('/archive/custom');
       }
       setIsLoading(false);
     }
@@ -141,7 +146,7 @@ export default function CustomEditPage() {
       artists: '',
       director: '',
       author: '',
-      relatedArtists: ''
+      relatedArtists: []
     };
     setItems([...items, newItem]);
     setActiveTab(items.length); // 방금 추가한 아이템 탭으로 이동
@@ -163,7 +168,7 @@ export default function CustomEditPage() {
   const handleAddImageUrl = (e) => {
     if (e) e.preventDefault();
     if (!currentUrlInput.trim()) return;
-    
+
     const newItems = [...items];
     const currentUrls = newItems[activeTab].imageUrls || [];
     newItems[activeTab] = { ...newItems[activeTab], imageUrls: [...currentUrls, currentUrlInput.trim()] };
@@ -174,9 +179,9 @@ export default function CustomEditPage() {
   const handleRemoveImageUrl = (urlIndex) => {
     const newItems = [...items];
     const currentUrls = newItems[activeTab].imageUrls || [];
-    newItems[activeTab] = { 
-      ...newItems[activeTab], 
-      imageUrls: currentUrls.filter((_, i) => i !== urlIndex) 
+    newItems[activeTab] = {
+      ...newItems[activeTab],
+      imageUrls: currentUrls.filter((_, i) => i !== urlIndex)
     };
     setItems(newItems);
     if (activeImageIdx >= newItems[activeTab].imageUrls.length) {
@@ -193,6 +198,38 @@ export default function CustomEditPage() {
     setAlbumMeta(prev => ({ ...prev, coverImageUrl: cover, additionalImages: additional }));
   };
 
+  const handleAutoFill = (itemData) => {
+    const newItems = [...items];
+    if (activeTab === 'album') setActiveTab(0);
+    const idx = activeTab === 'album' ? 0 : activeTab;
+
+    const meta = itemData.mediaMeta || {};
+    const artistsArr = Array.isArray(itemData.artists) ? itemData.artists : [];
+    const relatedArr = []; // 관련 아티스트는 검색 결과에서 빈 배열로 초기화
+    const contributors = Array.isArray(meta.contributors) ? meta.contributors : [];
+
+    let cat = 'music';
+    if (itemData.itemType?.includes('movie')) cat = 'movie';
+    if (itemData.itemType?.includes('book')) cat = 'book';
+
+    newItems[idx] = {
+      ...newItems[idx],
+      title: itemData.title || newItems[idx].title,
+      category: cat,
+      imageUrls: [itemData.image_url, ...(meta.images || [])].filter(Boolean),
+      hashtags: itemData.genres || [],
+      releaseYear: meta.releaseYear || '',
+      artists: artistsArr.join(', '),
+      director: cat === 'movie' ? (contributors[0]?.name || '') : '',
+      author: cat === 'book' ? (contributors[0]?.name || '') : '',
+      relatedArtists: relatedArr,
+      description: meta.overview || newItems[idx].description, // 영화 줄거리 등 추가
+    };
+
+    setItems(newItems);
+    clearSearch();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!albumMeta.title.trim()) {
@@ -200,12 +237,13 @@ export default function CustomEditPage() {
       setActiveTab('album');
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       const payload = {
         title: albumMeta.title,
         category: albumMeta.category,
+        is_public: albumMeta.is_public || false,
         coverImageUrl: albumMeta.coverImageUrl || items[0]?.imageUrls?.[0] || '',
         additionalImages: albumMeta.additionalImages,
         pinLayout: albumMeta.pinLayout,
@@ -237,7 +275,7 @@ export default function CustomEditPage() {
           relatedArtists: it.relatedArtists
         }))
       };
-      
+
       await updateCustomAlbum(albumId, payload);
       navigate(`/archive/custom/${albumId}`);
     } catch (error) {
@@ -280,9 +318,9 @@ export default function CustomEditPage() {
           <span>Back</span>
         </button>
         <h1 className="create-title">Edit Custom Album</h1>
-        <button 
-          className="submit-btn" 
-          onClick={handleSubmit} 
+        <button
+          className="submit-btn"
+          onClick={handleSubmit}
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Saving...' : (
@@ -303,10 +341,10 @@ export default function CustomEditPage() {
           onAdd={handleAddItem}
           onRemove={handleRemoveItem}
         />
-        
+
         <div className="top-nav-right">
           <div className="nav-divider" />
-          <button 
+          <button
             className={`album-settings-trigger ${activeTab === 'album' ? 'active' : ''}`}
             onClick={() => setActiveTab('album')}
           >
@@ -321,24 +359,26 @@ export default function CustomEditPage() {
         </div>
       </div>
 
+      <SearchResultSection onItemClick={handleAutoFill} />
+
       <div className="create-content">
         {/* 중앙 에디터 (아이템 모드) */}
         {activeTab !== 'album' && items[activeTab] && (
           <div className="create-form-section">
             <h2 className="section-title">Editing Item {activeTab + 1}</h2>
-            
+
             <div className="item-editor-hero" style={{ display: 'flex', gap: '32px', alignItems: 'flex-start' }}>
               {/* 왼쪽: 대형 이미지 캐러셀 프리뷰 */}
-              <div className="item-cover-preview" style={{ 
-                flex: '0 0 280px', 
+              <div className="item-cover-preview" style={{
+                flex: '0 0 280px',
                 width: '280px',
-                height: '280px', 
-                backgroundColor: 'rgba(255,255,255,0.05)', 
-                borderRadius: '16px', 
-                overflow: 'hidden', 
+                height: '280px',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                borderRadius: '16px',
+                overflow: 'hidden',
                 border: '1px solid rgba(255,255,255,0.1)',
               }}>
-                <CustomImageCarousel 
+                <CustomImageCarousel
                   images={items[activeTab].imageUrls}
                   activeIndex={activeImageIdx}
                   setActiveIndex={setActiveImageIdx}
@@ -355,30 +395,50 @@ export default function CustomEditPage() {
               <div className="item-hero-fields" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="form-group">
                   <label>Image URLs</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input 
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <input
                       id="image-url-input"
-                      type="url" 
+                      type="url"
                       className="form-input"
                       placeholder="https://... (Press Enter or Add)"
                       value={currentUrlInput}
                       onChange={(e) => setCurrentUrlInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleAddImageUrl(e); }}
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={handleAddImageUrl}
                       style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '0 20px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
                     >
                       Add
                     </button>
                   </div>
+                  {/* 추가된 이미지 URL 목록 표시 및 삭제 버튼 */}
+                  {items[activeTab].imageUrls && items[activeTab].imageUrls.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {items[activeTab].imageUrls.map((url, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '6px 10px', borderRadius: '6px', fontSize: '0.85rem' }}>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'rgba(255,255,255,0.8)', maxWidth: '200px' }}>
+                            {url}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImageUrl(idx)}
+                            style={{ background: 'transparent', border: 'none', color: '#ff4d4f', cursor: 'pointer', padding: '2px 4px' }}
+                            title="Remove URL"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
                   <label>Item Title <span className="required">*</span></label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input text-lg"
                     placeholder="Enter item title"
                     value={items[activeTab].title}
@@ -389,7 +449,7 @@ export default function CustomEditPage() {
                 <div className="form-row">
                   <div className="form-group flex-1">
                     <label>Item Category</label>
-                    <select 
+                    <select
                       className="form-select"
                       value={items[activeTab].category}
                       onChange={(e) => handleItemChange(activeTab, 'category', e.target.value)}
@@ -401,9 +461,9 @@ export default function CustomEditPage() {
                   </div>
                   <div className="form-group flex-1">
                     <label>Item Rating</label>
-                    <StarRating 
-                      rating={items[activeTab].rating} 
-                      onChange={(val) => handleItemChange(activeTab, 'rating', val)} 
+                    <StarRating
+                      rating={items[activeTab].rating}
+                      onChange={(val) => handleItemChange(activeTab, 'rating', val)}
                     />
                   </div>
                 </div>
@@ -417,8 +477,8 @@ export default function CustomEditPage() {
                   <>
                     <div className="form-group flex-1">
                       <label>Artist(s) <span className="field-hint">(Comma separated)</span></label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         className="form-input"
                         placeholder="e.g. The Beatles, John Lennon"
                         value={items[activeTab].artists}
@@ -427,23 +487,20 @@ export default function CustomEditPage() {
                     </div>
                     <div className="form-group flex-1">
                       <label>Related Artists</label>
-                      <input 
-                        type="text" 
-                        className="form-input"
-                        placeholder="e.g. Paul McCartney"
-                        value={items[activeTab].relatedArtists}
-                        onChange={(e) => handleItemChange(activeTab, 'relatedArtists', e.target.value)}
+                      <HashtagInput
+                        tags={items[activeTab].relatedArtists}
+                        onChange={(tags) => handleItemChange(activeTab, 'relatedArtists', tags)}
                       />
                     </div>
                   </>
                 )}
-                
+
                 {items[activeTab].category === 'movie' && (
                   <>
                     <div className="form-group flex-1">
                       <label>Director</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         className="form-input"
                         placeholder="e.g. Christopher Nolan"
                         value={items[activeTab].director}
@@ -452,12 +509,9 @@ export default function CustomEditPage() {
                     </div>
                     <div className="form-group flex-1">
                       <label>Related Actors / Artists</label>
-                      <input 
-                        type="text" 
-                        className="form-input"
-                        placeholder="e.g. Leonardo DiCaprio"
-                        value={items[activeTab].relatedArtists}
-                        onChange={(e) => handleItemChange(activeTab, 'relatedArtists', e.target.value)}
+                      <HashtagInput
+                        tags={items[activeTab].relatedArtists}
+                        onChange={(tags) => handleItemChange(activeTab, 'relatedArtists', tags)}
                       />
                     </div>
                   </>
@@ -466,8 +520,8 @@ export default function CustomEditPage() {
                 {items[activeTab].category === 'book' && (
                   <div className="form-group flex-1">
                     <label>Author</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="form-input"
                       placeholder="e.g. J.K. Rowling"
                       value={items[activeTab].author}
@@ -478,8 +532,8 @@ export default function CustomEditPage() {
 
                 <div className="form-group flex-1">
                   <label>Release Year</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-input"
                     placeholder="e.g. 2024"
                     value={items[activeTab].releaseYear}
@@ -491,7 +545,7 @@ export default function CustomEditPage() {
 
             <div className="form-group">
               <label>Hashtags</label>
-              <HashtagInput 
+              <HashtagInput
                 tags={items[activeTab].hashtags}
                 onChange={(tags) => handleItemChange(activeTab, 'hashtags', tags)}
               />
@@ -499,7 +553,7 @@ export default function CustomEditPage() {
 
             <div className="form-group">
               <label>Content Links</label>
-              <LinksInput 
+              <LinksInput
                 links={items[activeTab].links}
                 onChange={(links) => handleItemChange(activeTab, 'links', links)}
               />
@@ -507,8 +561,8 @@ export default function CustomEditPage() {
 
             <div className="form-group">
               <label>Short Review / Impression</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="form-input"
                 placeholder="Write a short impression or subtitle"
                 value={items[activeTab].impression}
@@ -518,7 +572,7 @@ export default function CustomEditPage() {
 
             <div className="form-group">
               <label>Detailed Review / Content</label>
-              <textarea 
+              <textarea
                 className="form-textarea"
                 placeholder="Write a detailed review or content"
                 rows={4}
@@ -534,10 +588,10 @@ export default function CustomEditPage() {
           <>
             <div className="create-form-section">
               <h2 className="section-title">Finalize Album Settings</h2>
-              
+
               <div className="form-group">
                 <label>Album Cover (Optional)</label>
-                <ImageUrlInput 
+                <ImageUrlInput
                   coverUrl={albumMeta.coverImageUrl}
                   additionalUrls={albumMeta.additionalImages}
                   onChange={handleMetaImageChange}
@@ -547,8 +601,8 @@ export default function CustomEditPage() {
 
               <div className="form-group">
                 <label>Album Title <span className="required">*</span></label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-input text-lg"
                   placeholder="Enter overall album title"
                   value={albumMeta.title}
@@ -558,7 +612,7 @@ export default function CustomEditPage() {
 
               <div className="form-group">
                 <label>Album Main Category</label>
-                <select 
+                <select
                   className="form-select"
                   value={albumMeta.category}
                   onChange={(e) => handleMetaChange('category', e.target.value)}
@@ -571,10 +625,30 @@ export default function CustomEditPage() {
 
               <div className="form-group">
                 <label>Pin Design (Layout)</label>
-                <LayoutPresetSelector 
+                <LayoutPresetSelector
                   layout={albumMeta.pinLayout}
                   onChange={(layout) => handleMetaChange('pinLayout', layout)}
                 />
+              </div>
+
+              {/* 커뮤니티 공개 토글 */}
+              <div className="form-group">
+                <label>Curation Share</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: albumMeta.is_public ? 'rgba(139, 92, 246, 0.12)' : 'rgba(255,255,255,0.04)', border: `1px solid ${albumMeta.is_public ? 'rgba(139,92,246,0.4)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', transition: 'all 0.2s', cursor: 'pointer' }}
+                  onClick={() => handleMetaChange('is_public', !albumMeta.is_public)}
+                >
+                  <div style={{ width: '40px', height: '22px', borderRadius: '11px', background: albumMeta.is_public ? 'var(--accent-color, #8b5cf6)' : 'rgba(255,255,255,0.15)', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', top: '3px', left: albumMeta.is_public ? '21px' : '3px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: albumMeta.is_public ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.6)' }}>
+                      {albumMeta.is_public ? '커뮤니티에 공개됨' : '비공개 (나만 볼 수 있음)'}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
+                      공개 시 다른 사용자들이 검색하고 탐색할 수 있습니다
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -582,7 +656,7 @@ export default function CustomEditPage() {
               <div className="preview-sticky-container">
                 <h3 className="preview-label">Live Pin Preview</h3>
                 <div className="preview-card-wrapper">
-                  <CustomPinCard album={previewAlbum} onClick={() => {}} />
+                  <CustomPinCard album={previewAlbum} onClick={() => { }} />
                 </div>
                 <p className="preview-hint">
                   Your album will appear like this on the pinboard based on the selected layout.

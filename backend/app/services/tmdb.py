@@ -504,3 +504,56 @@ async def get_person_detail(person_id: int) -> Optional[Dict[str, Any]]:
 
     return data
 
+
+async def get_movies_by_person_name(person_name: str, limit: int = 20) -> List[Dict[str, Any]]:
+    """Search for a person and return their popular movie credits."""
+    persons = await search_person(person_name, limit=1)
+    if not persons:
+        return []
+    
+    person_id = persons[0].get("metadata", {}).get("tmdb_id")
+    if not person_id:
+        return []
+        
+    detail = await get_person_detail(person_id)
+    if not detail or "movie_credits" not in detail:
+        return []
+        
+    # Combine cast and crew, sort by popularity
+    credits = []
+    seen_ids = set()
+    
+    for work in detail["movie_credits"].get("cast", []) + detail["movie_credits"].get("crew", []):
+        if work.get("id") not in seen_ids and work.get("poster_path"):
+            seen_ids.add(work["id"])
+            credits.append(work)
+            
+    # Sort by popularity descending
+    credits.sort(key=lambda x: x.get("popularity", 0), reverse=True)
+    
+    # Format to match get_movies_by_genre output
+    results = []
+    for m in credits[:limit]:
+        release_year = None
+        release_date = m.get("release_date", "")
+        if release_date and len(release_date) >= 4:
+            release_year = int(release_date[:4])
+            
+        results.append({
+            "external_id": str(m.get("id", "")),
+            "external_source": "tmdb",
+            "item_type": "movie",
+            "title": m.get("title", ""),
+            "subtitle": m.get("character", "") or m.get("job", ""),
+            "cover_image_url": m.get("poster_path"),
+            "preview_url": None,
+            "release_year": release_year,
+            "metadata": {
+                "tmdb_id": m.get("id"),
+                "vote_average": m.get("vote_average", 0.0),
+                "genre_ids": m.get("genre_ids", []),
+            },
+        })
+        
+    return results
+

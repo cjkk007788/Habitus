@@ -27,6 +27,23 @@ export default function ArchiveCustom() {
     navigate(`/archive/custom/${album.id}`);
   };
 
+  const handleTogglePublic = async (album, e) => {
+    e.stopPropagation();
+    try {
+      const { updateAlbum } = await import('../../../api/archiveApi');
+      await updateAlbum(album.id, { is_public: !album.is_public });
+      // Update local state temporarily
+      useCustomArchiveStore.setState((state) => ({
+        customAlbums: state.customAlbums.map(a => 
+          a.id === album.id ? { ...a, is_public: !album.is_public } : a
+        )
+      }));
+    } catch (err) {
+      console.error('Failed to toggle public state', err);
+      alert('공유 상태 변경에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="archive-custom">
       <div className="custom-header">
@@ -70,6 +87,7 @@ export default function ArchiveCustom() {
               key={album.id}
               album={album}
               onClick={handleCardClick}
+              onTogglePublic={handleTogglePublic}
             />
           ))}
         </MasonryGrid>

@@ -24,7 +24,7 @@ export default function CuratedRow({ category, curationId, title }) {
 
   useEffect(() => {
     const loadData = async () => {
-      const cacheKey = `curated_v2_${category}_${curationId}`;
+      const cacheKey = `curated_v5_${category}_${curationId}`;
 
       // 캐시 hit → 포맷 변환 결과까지 캐시되므로 즉시 렌더링
       const cached = getCache(cacheKey, CURATION_TTL);

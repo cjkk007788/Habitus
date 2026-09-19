@@ -34,6 +34,11 @@ export default function Navbar() {
     <>
       <nav className="nav_menu">
         <ul>
+          <li className="nav-item">
+            <NavLink to="/curation">
+              <h3><AnimatedText text="Curation" /></h3>
+            </NavLink>
+          </li>
           <li className="nav-item has-dropdown">
             <NavLink to="/digging" className={randomAnimateIdx === 0 ? 'force-animate' : ''}>
               <h3><AnimatedText text="Digging" /></h3>

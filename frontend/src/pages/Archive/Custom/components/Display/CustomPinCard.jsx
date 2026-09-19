@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Music, Film, BookOpen, Palette, Pin } from 'lucide-react';
+import { Star, Music, Film, BookOpen, Palette, Pin, Globe } from 'lucide-react';
 import './CustomPinCard.css';
 
 const CATEGORY_CONFIG = {
@@ -18,7 +18,11 @@ const CATEGORY_CONFIG = {
 /**
  * 핀 카드에 표시할 대표(메타) 아이템을 추출
  */
+
+//album id를 받아서 album
+
 function getMetaItem(album) {
+  
   if (!album.items || album.items.length === 0) return null;
   // user_meta.is_meta_item이 true인 아이템을 찾고, 없으면 첫 번째 아이템 사용
   return album.items.find(i => i.userMeta?.is_meta_item) || album.items[0];
@@ -27,6 +31,7 @@ function getMetaItem(album) {
 /**
  * 별점 렌더링
  */
+
 function RatingDisplay({ rating }) {
   if (!rating || rating <= 0) return null;
   return (
@@ -37,11 +42,25 @@ function RatingDisplay({ rating }) {
   );
 }
 
+function ShareButton({ album, onTogglePublic }) {
+  if (!onTogglePublic) return null;
+  return (
+    <button 
+      className={`pin-card__share-btn ${album.is_public ? 'active' : ''}`}
+      onClick={(e) => onTogglePublic(album, e)}
+      title={album.is_public ? 'Make Private' : 'Share to Curation'}
+    >
+      <Globe size={14} color={album.is_public ? '#9B51E0' : '#888'} />
+    </button>
+  );
+}
+
 /**
  * 커스텀 핀 카드 컴포넌트
  * pin_layout에 따라 3가지 레이아웃을 렌더링
  */
-export default function CustomPinCard({ album, onClick }) {
+
+export default function CustomPinCard({ album, onClick, onTogglePublic }) {
   const meta = getMetaItem(album);
   if (!meta) return null;
 
@@ -93,7 +112,10 @@ export default function CustomPinCard({ album, onClick }) {
                 ))}
               </div>
             )}
-            <RatingDisplay rating={rating} />
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
+              <RatingDisplay rating={rating} />
+              <ShareButton album={album} onTogglePublic={onTogglePublic} />
+            </div>
           </div>
         </div>
       </div>
@@ -133,12 +155,15 @@ export default function CustomPinCard({ album, onClick }) {
         <div className="pin-card__footer">
           {hashtags.length > 0 && (
             <div className="pin-card__tags">
-              {hashtags.slice(0, 3).map((tag, i) => (
+              {hashtags.slice(0, 2).map((tag, i) => (
                 <span key={i} className="pin-card__tag">#{tag}</span>
               ))}
             </div>
           )}
-          <RatingDisplay rating={rating} />
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
+            <RatingDisplay rating={rating} />
+            <ShareButton album={album} onTogglePublic={onTogglePublic} />
+          </div>
         </div>
       </div>
     );
@@ -167,7 +192,10 @@ export default function CustomPinCard({ album, onClick }) {
             ))}
           </div>
         )}
-        <RatingDisplay rating={rating} />
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
+          <RatingDisplay rating={rating} />
+          <ShareButton album={album} onTogglePublic={onTogglePublic} />
+        </div>
       </div>
       <div className="pin-card__minimal-accent" style={{ backgroundColor: dominantColor }} />
     </div>

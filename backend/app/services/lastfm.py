@@ -56,6 +56,26 @@ async def get_track_info(artist_name: str, track_name: str, mbid: Optional[str] 
     return await api_request(LASTFM_BASE_URL, params=params)
 
 
+async def get_top_tracks_by_tag(tag: str, page: int = 1, limit: int = 10) -> list:
+    """Fetch top tracks for a specific genre/tag from Last.fm."""
+    if not settings.LASTFM_API_KEY:
+        logger.warning("LASTFM_API_KEY is not set, skipping Last.fm request")
+        return []
+
+    params = {
+        "method": "tag.gettoptracks",
+        "tag": tag,
+        "api_key": settings.LASTFM_API_KEY,
+        "format": "json",
+        "limit": limit,
+        "page": page,
+    }
+
+    data = await api_request(LASTFM_BASE_URL, params=params)
+    if data and "tracks" in data and "track" in data["tracks"]:
+        return data["tracks"]["track"]
+    return []
+
 async def get_top_artists_by_tag(tag: str, page: int = 1, limit: int = 10) -> list:
     """Fetch top artists for a specific genre/tag from Last.fm (much more resilient than MusicBrainz)."""
     if not settings.LASTFM_API_KEY:

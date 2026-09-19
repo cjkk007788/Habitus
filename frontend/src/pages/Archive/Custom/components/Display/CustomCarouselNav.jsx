@@ -1,6 +1,8 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Plus, Settings, Trash2 } from 'lucide-react';
 
+//Create Custom album page 맨위에 있는 캐러셀
+
 export default function CustomCarouselNav({ items, activeTab, setActiveTab, onAdd, onRemove }) {
   // 1. 모든 카드 배열 구성
   // items 배열 뒤에 '추가 버튼' 카드만 붙입니다.
